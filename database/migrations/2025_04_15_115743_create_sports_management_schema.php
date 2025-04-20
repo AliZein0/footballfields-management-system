@@ -35,6 +35,8 @@ return new class extends Migration
             $table->decimal('fees', 10, 2);
             $table->string('name');
             $table->string('size');
+            $table->unsignedInteger('rating');
+            $table->string('location');
             $table->text('details')->nullable();
             $table->boolean('is_covered')->default(false);
             $table->string('image_path')->nullable();
@@ -48,8 +50,12 @@ return new class extends Migration
         // 6. Teams Table
         Schema::create('teams', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('captain_id')->constrained('users');
             $table->string('name');
-           
+            $table->integer('size');
+            $table->date('founded_date');
+            $table->string('logo_image_path')->nullable();
+            $table->string('social_media_links')->nullable();
             $table->text('description')->nullable();
             $table->timestamps();
         });
@@ -58,6 +64,14 @@ return new class extends Migration
         Schema::create('players', function (Blueprint $table) {
             $table->foreignId('id')->primary()->constrained('users')->onDelete('cascade');
             $table->foreignId('team_id')->constrained('teams');
+            $table->enum('sport', ['football', 'basketball', 'tennis', 'volleyball']);
+            $table->timestamps();
+        });
+
+        Schema::create('player_favorite_venues', function (Blueprint $table) {
+            $table->foreignId('sport_field_id')->constrained('sport_fields');
+            $table->foreignId('player_id')->constrained('players');
+            $table->primary(['player_id', 'sport_field_id']);
             $table->timestamps();
         });
 
@@ -97,8 +111,7 @@ return new class extends Migration
 
         // 11. Admins Table
         Schema::create('admins', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('id')->primary()->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });
 
@@ -129,7 +142,7 @@ return new class extends Migration
         // 14. Vendors Table
         Schema::create('vendors', function (Blueprint $table) {
             
-            $table->foreignId('id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('id')->primary()->constrained('users')->onDelete('cascade');
             $table->string('business_type');
             $table->timestamps();
         });

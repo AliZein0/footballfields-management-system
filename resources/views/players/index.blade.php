@@ -188,7 +188,7 @@
             <ol class="carousel-indicators"></ol>
         </div>
     </section>
-    <!-- /Hero Section -->
+    <!-- Hero Section -->
     
     <!-- Search Results Section (Replaces Recommended Fields Section) -->
     <section id="search-results" class="book-a-table section py-4">
