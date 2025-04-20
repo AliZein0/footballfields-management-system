@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $fieldDetails['title'] }}</title>
+    <title>{{ $field['title'] }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
@@ -87,25 +87,35 @@
 </head>
 <body>
     <div class="container">
-        <h1 class="text-center mb-4 fw-bold">{{ $fieldDetails['title'] }}</h1>
+        <h1 class="text-center mb-4 fw-bold">{{ $field['title'] }}</h1>
         <div class="row">
+            
+            
             <!-- Left Side: Field Details and Carousel -->
+            
             <div class="col-md-6">
                 <div class="field-details">
                     <h3>Field Details</h3>
                     <ul class="list-unstyled">
-                        <li><strong>Type:</strong> {{ $fieldDetails['type'] }}</li>
-                        <li><strong>Covered:</strong> {{ $fieldDetails['covered'] }}</li>
-                        <li><strong>Opening Hours:</strong> {{ $fieldDetails['hours'] }}</li>
+                        <li><strong>Type:</strong> {{ $field['type'] }}</li>
+                        <li><strong>Covered:</strong> {{ $field['is_covered'] ? 'Yes' : 'No' }}</li>
+                        <li><strong>Opening Hours:</strong> {{ $field->defaultSchedule->from_time }}</li>
                     </ul>
                 </div>
                 <div id="fieldCarousel" class="carousel slide" data-bs-ride="carousel">
                     <div class="carousel-inner">
-                        @foreach($fieldDetails['images'] as $index => $image)
+                    
+                        @if($field->images->isEmpty())
+                            <div class="carousel-item active">
+                                <img src="{{ asset('images/default.jpg') }}" class="d-block w-100" alt="{{ $field['title'] }}">
+                            </div>
+                        @foreach($field->images as $index => $image)
                             <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
-                                <img src="{{ asset($image) }}" class="d-block w-100" alt="{{ $fieldDetails['title'] }}">
+                                <img src="{{ asset($image) }}" class="d-block w-100" alt="{{ $field['title'] }}">
                             </div>
                         @endforeach
+                        @endif
+                   
                     </div>
                     <button class="carousel-control-prev" type="button" data-bs-target="#fieldCarousel" data-bs-slide="prev">
                         <span class="carousel-control-prev-icon" aria-hidden="true"></span>
@@ -143,22 +153,22 @@
         <div class="map-section mt-4">
             <h3 class="text-center">Field Location</h3>
             <div id="fieldMap" style="height: 400px; border-radius: 15px; overflow: hidden;">
-                <iframe src="{{ $fieldDetails['mapEmbed'] }}" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                <iframe src="{{ $field['mapEmbed'] }}" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
             </div>
         </div>
 
         <!-- Reviews Section -->
-        <div class="reviews-section">
+        {{-- <div class="reviews-section">
             <h3>Reviews</h3>
             <div id="reviewsContainer">
-                @foreach($fieldDetails['reviews'] as $review)
+                @foreach($field['reviews'] as $review)
                     <div class="review-card">
                         <h5>{{ $review['user'] }} <span class="text-warning"><i class="fas fa-star"></i> {{ $review['rating'] }}</span></h5>
                         <p>{{ $review['comment'] }}</p>
                     </div>
                 @endforeach
             </div>
-        </div>
+        </div> --}}
     </div>
 
     <!-- Modal for Available Slots -->
@@ -180,7 +190,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
-        const field = @json($fieldDetails);
+        const field = @json($field);
         let selectedDate = '2025-03-21';
 
         // Initialize flatpickr calendar

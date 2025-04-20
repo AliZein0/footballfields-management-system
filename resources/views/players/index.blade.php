@@ -62,7 +62,7 @@
                                     <div class="search-input-group">
                                         <i class="fas fa-ruler input-icon"></i>
                                         <select name="size" class="size-dropdown">
-                                            <option value="" disabled selected>Field Size</option>
+                                            <option value="" disabled selected>Venue Size</option>
                                             <option value="small">Small</option>
                                             <option value="medium">Medium</option>
                                             <option value="large">Large</option>
@@ -197,13 +197,13 @@
                 <h2>Search Results</h2>
                 <div>
                     <span>Found</span> 
-                    <span class="description-title">{{ $resultsCount }} Fields</span>
+                    <span class="description-title">{{ $resultsCount }} Venues</span>
                 </div>
             @else
-                <h2>Book a Field</h2>
+                <h2>Book a Venue</h2>
                 <div>
                     <span>Recommended</span> 
-                    <span class="description-title">Fields</span>
+                    <span class="description-title">Venue</span>
                 </div>
             @endif
         </div>
@@ -217,7 +217,7 @@
                             <a href="" class="text-decoration-none">
                                 <div class="card search-result-card h-100">
                                     <div class="field-image-container">
-                                        <img src="{{ asset($field->image_path ?? 'img/default-field.jpg') }}" class="card-img-top" alt="{{ $field->name }}">
+                                        <img src="{{ asset($field->main_image_path ?? 'img/default-field.jpg') }}" class="card-img-top" alt="{{ $field->name }}">
                                         <div class="field-type-badge">
                                             <span class="badge bg-primary">{{ $field->type }}</span>
                                         </div>
@@ -292,9 +292,9 @@
                                         
                                         @foreach($chunk as $field)
                                             <div class="col-md-4 d-flex justify-content-center">
-                                                <a href="" class="text-decoration-none">
+                                                <a href="{{route('sport_field.show',$field['id'])}}" class="text-decoration-none">
                                                     <div class="card field-card small-card">
-                                                        <img src="{{ asset($field['image_path']) }}" class="card-img-top" alt="{{ $field['name'] }}">
+                                                        <img src="{{ asset($field['main_image_path']) }}" class="card-img-top" alt="{{ $field['name'] }}">
                                                         <div class="card-body p-2">
                                                             <h6 class="card-title mb-1">{{ $field['name'] }}</h6>
                                                             <span class="badge bg-primary mb-2">{{ $field['type'] }}</span>

@@ -39,10 +39,10 @@ return new class extends Migration
             $table->string('location');
             $table->text('details')->nullable();
             $table->boolean('is_covered')->default(false);
-            $table->string('image_path')->nullable();
+            $table->string('main_image_path')->nullable();
             $table->enum('type', ['football', 'basketball', 'Tennis', 'Volleyball']);
             $table->foreignId('manager_id')->constrained('users');
-            $table->foreignId('schedule_id')->constrained('default_schedules');
+            $table->foreignId('default_schedule_id')->constrained('default_schedules');
             $table->timestamps();
         });
         
@@ -215,6 +215,14 @@ return new class extends Migration
             $table->foreignId('vendor_id')->constrained('vendors');
             $table->foreignId('permit_id')->constrained('vendor_permits');
             $table->primary(['vendor_id', 'permit_id']);
+        });
+
+        // 22. Field Images table
+        Schema::create('field_images', function (Blueprint $table) {
+            $table->id();
+            $table->string('image_path');
+            $table->foreignId('sport_field_id')->constrained('sport_fields');
+            $table->timestamps();
         });
 
       

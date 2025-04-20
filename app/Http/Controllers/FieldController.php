@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\SportField; // Assuming this is your field model
 use Illuminate\Support\Facades\DB;
-
+use App\Models\Image;
 class FieldController extends Controller
 {
     /**
@@ -66,4 +66,18 @@ class FieldController extends Controller
         // Pass data to the view
         return view('players.index', compact('searchResults', 'resultsCount'));
     }
+
+
+
+    function show(SportField $field)
+    {
+        
+        return view('sport_fields.show',[
+            'field' => $field,
+        ]);
+    }
+
+
+    
+    
 }
