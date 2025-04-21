@@ -69,13 +69,7 @@ class FieldController extends Controller
 
 
 
-    function show(SportField $field)
-    {
-        
-        return view('sport_fields.show',[
-            'field' => $field,
-        ]);
-    }
+   
 
 
     

@@ -36,7 +36,8 @@ return new class extends Migration
             $table->string('name');
             $table->string('size');
             $table->unsignedInteger('rating');
-            $table->string('location');
+            $table->string('city');
+            $table->text('mapEmbed');
             $table->text('details')->nullable();
             $table->boolean('is_covered')->default(false);
             $table->string('main_image_path')->nullable();

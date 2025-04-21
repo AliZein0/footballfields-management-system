@@ -292,7 +292,7 @@
                                         
                                         @foreach($chunk as $field)
                                             <div class="col-md-4 d-flex justify-content-center">
-                                                <a href="{{route('sport_field.show',$field['id'])}}" class="text-decoration-none">
+                                                <a href="{{ route('booking.show', ['player' => '11', 'field' => $field['id']]) }}" class="text-decoration-none">
                                                     <div class="card field-card small-card">
                                                         <img src="{{ asset($field['main_image_path']) }}" class="card-img-top" alt="{{ $field['name'] }}">
                                                         <div class="card-body p-2">
