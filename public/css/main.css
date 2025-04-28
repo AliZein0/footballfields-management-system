@@ -79,30 +79,29 @@ h6 {
 /* Search bar
 ------------------------------*/
 /* Improved Search Bar Styles */
+/* Search Bar Styles */
 .search-bar-container {
-  background: rgba(255, 255, 255, 0.9);
+  background-color: rgba(255, 255, 255, 0.95);
   border-radius: 10px;
   padding: 20px;
-  max-width: 850px;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+  max-width: 900px;
   margin: 0 auto;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(5px);
 }
 
 .search-main-row {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
+  align-items: center;
   margin-bottom: 15px;
 }
 
-@media (max-width: 768px) {
-  .search-main-row {
-      flex-direction: column;
-  }
-}
-
 .search-input-group {
-  flex: 1;
   position: relative;
+  flex: 1;
+  min-width: 200px;
 }
 
 .input-icon {
@@ -110,162 +109,93 @@ h6 {
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: #6c757d;
+  color: #555;
+  z-index: 1;
 }
 
-.search-input-group input,
-.search-input-group select {
+.stadium-input, 
+.city-dropdown, 
+.sport-dropdown,
+.size-dropdown,
+.fees-dropdown,
+.covered-dropdown {
   width: 100%;
-  padding: 12px 15px 12px 40px;
-  border: 1px solid #e0e0e0;
+  padding: 10px 12px 10px 40px;
+  border: 1px solid #ddd;
   border-radius: 6px;
-  font-size: 15px;
-  height: 48px;
-  background-color: white;
+  font-size: 14px;
+  background-color: #fff;
+  transition: all 0.3s ease;
+}
+
+select.city-dropdown, 
+select.sport-dropdown,
+select.size-dropdown,
+select.fees-dropdown,
+select.covered-dropdown {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23555' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: calc(100% - 12px) center;
+  padding-right: 30px;
+}
+
+.stadium-input:focus, 
+.city-dropdown:focus, 
+.sport-dropdown:focus,
+.size-dropdown:focus,
+.fees-dropdown:focus,
+.covered-dropdown:focus {
+  border-color: #4154f1;
+  box-shadow: 0 0 0 3px rgba(65, 84, 241, 0.15);
+  outline: none;
 }
 
 .search-button {
-  padding: 0 25px;
-  height: 48px;
-  background-color: #0d6efd;
+  background-color: #4154f1;
   color: white;
   border: none;
   border-radius: 6px;
-  font-size: 16px;
+  padding: 10px 20px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: all 0.3s ease;
   white-space: nowrap;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  min-width: 120px;
 }
 
 .search-button:hover {
-  background-color: #0b5ed7;
+  background-color: #3645d3;
+  transform: translateY(-2px);
 }
 
 .advanced-search-toggle {
   text-align: center;
-  margin-top: 5px;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
 }
 
 .advanced-search-toggle a {
-  color: #0d6efd;
-  text-decoration: none;
+  color: #4154f1;
   font-size: 14px;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
+  text-decoration: none;
+  font-weight: 500;
 }
 
 .advanced-search-toggle a:hover {
   text-decoration: underline;
 }
 
+.advanced-search-container {
+  background-color: #f9f9f9;
+  border-radius: 6px;
+  padding: 15px;
+  margin-top: 10px;
+}
+
 .advanced-search-row {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
-}
-
-@media (max-width: 768px) {
-  .advanced-search-row {
-      flex-direction: column;
-  }
-}
-
-/* Sport select with icons */
-.sport-select-group select {
-  padding-left: 40px; /* Make room for the icon */
-}
-
-/* Animate advanced search toggle */
-.fa-chevron-down {
-  transition: transform 0.3s ease;
-}
-
-.active .fa-chevron-down {
-  transform: rotate(180deg);
-}
-/* Pulsating Play Button
-------------------------------*/
-.pulsating-play-btn {
-  width: 94px;
-  height: 94px;
-  background: radial-gradient(var(--accent-color1) 50%, color-mix(in srgb, var(--accent-color1), transparent 75%) 52%);
-  border-radius: 50%;
-  display: block;
-  position: relative;
-  overflow: hidden;
-}
-
-.pulsating-play-btn:before {
-  content: "";
-  position: absolute;
-  width: 120px;
-  height: 120px;
-  animation-delay: 0s;
-  animation: pulsate-play-btn 2s;
-  animation-direction: forwards;
-  animation-iteration-count: infinite;
-  animation-timing-function: steps;
-  opacity: 1;
-  border-radius: 50%;
-  border: 5px solid color-mix(in srgb, var(--accent-color1), transparent 30%);
-  top: -15%;
-  left: -15%;
-  background: rgba(198, 16, 0, 0);
-}
-
-.pulsating-play-btn:after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translateX(-40%) translateY(-50%);
-  width: 0;
-  height: 0;
-  border-top: 10px solid transparent;
-  border-bottom: 10px solid transparent;
-  border-left: 15px solid #fff;
-  z-index: 100;
-  transition: all 400ms cubic-bezier(0.55, 0.055, 0.675, 0.19);
-}
-
-.pulsating-play-btn:hover:before {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translateX(-40%) translateY(-50%);
-  width: 0;
-  height: 0;
-  border: none;
-  border-top: 10px solid transparent;
-  border-bottom: 10px solid transparent;
-  border-left: 15px solid #fff;
-  z-index: 200;
-  animation: none;
-  border-radius: 0;
-}
-
-.pulsating-play-btn:hover:after {
-  border-left: 15px solid var(--accent-color1);
-  transform: scale(20);
-}
-
-@keyframes pulsate-play-btn {
-  0% {
-    transform: scale(0.6, 0.6);
-    opacity: 1;
-  }
-
-  100% {
-    transform: scale(1, 1);
-    opacity: 0;
-  }
 }
 
 /* PHP Email Form Messages
@@ -1909,3 +1839,151 @@ footer.bg-dark {
 }
 
 
+
+.tab-content {
+  display: none;
+}
+.tab-content.active {
+  display: block;
+}
+.profile-img {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+
+/* Create Team CSS */
+.step-indicator {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+.step {
+  text-align: center;
+  position: relative;
+  flex: 1;
+}
+.step:not(:last-child):after {
+  content: '';
+  position: absolute;
+  top: 25px;
+  left: 50%;
+  width: 100%;
+  height: 2px;
+  background-color: #e9ecef;
+  z-index: 0;
+}
+.step-number {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #e9ecef;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 10px;
+  position: relative;
+  z-index: 1;
+  font-weight: bold;
+  font-size: 1.2rem;
+  transition: all 0.3s;
+}
+.step.active .step-number {
+  background-color: #0d6efd;
+  color: white;
+}
+.step.completed .step-number {
+  background-color: #198754;
+  color: white;
+}
+.step-title {
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+.step.active .step-title {
+  color: #0d6efd;
+  font-weight: bold;
+}
+.step.completed .step-title {
+  color: #198754;
+}
+.tab-content {
+  padding: 1.5rem;
+  border: 1px solid #dee2e6;
+  border-radius: 0.5rem;
+}
+.logo-preview {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background-color: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  border: 1px dashed #ced4da;
+  color: #6c757d;
+  overflow: hidden;
+}
+.color-preview {
+  width: 100%;
+  height: 100px;
+  border-radius: 0.5rem;
+  margin-top: 1rem;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+}
+.player-template {
+  border: 1px solid #dee2e6;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+.sport-icon {
+  width: 120px;
+  height: 120px;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.sport-icon:hover {
+  transform: translateY(-5px);
+}
+.sport-card {
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.sport-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+.sport-card.selected {
+  border: 2px solid #0d6efd;
+}
+.jersey-preview {
+  width: 100px;
+  height: 150px;
+  background-color: #f8f9fa;
+  margin: 0 auto;
+  position: relative;
+  border-radius: 15px 15px 0 0;
+}
+.jersey-number {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2rem;
+  font-weight: bold;
+}

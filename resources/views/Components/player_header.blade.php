@@ -13,7 +13,7 @@
                     <li><a href="#about">About</a></li>
                     <li><a href="{{ route('teams.create') }}">Manage Team</a></li>
                     <li><a href="#book-a-table">Fields</a></li>
-                    <li><a href="{{ route('players.profile') }}">Profile</a></li>
+                    <li><a href="{{ route('players.show' , 11) }}">Profile</a></li>
                 </ul>
                 <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
             </nav>
