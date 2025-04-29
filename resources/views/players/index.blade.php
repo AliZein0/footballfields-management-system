@@ -111,7 +111,7 @@
                                 
                                 <div class="search-input-group">
                                     <i class="fas fa-map-marker-alt input-icon"></i>
-                                    <select name="city" class="city-dropdown">
+                                    <select name="location" class="city-dropdown">
                                         <option value="" disabled selected>Select City</option>
                                         <option value="city1">City 1</option>
                                         <option value="city2">City 2</option>
@@ -190,148 +190,185 @@
     </section>
     <!-- Hero Section -->
     
-    <!-- Search Results Section (Replaces Recommended Fields Section) -->
-    <section id="search-results" class="book-a-table section py-4">
-        <div class="container section-title">
-            @if(isset($searchResults))
-                <h2>Search Results</h2>
-                <div>
-                    <span>Found</span> 
-                    <span class="description-title">{{ $resultsCount }} Venues</span>
-                </div>
-            @else
-                <h2>Book a Venue</h2>
-                <div>
-                    <span>Recommended</span> 
-                    <span class="description-title">Venue</span>
-                </div>
-            @endif
-        </div>
-    
-        <div class="container">
-            @if(isset($searchResults) && count($searchResults) > 0)
-                <!-- Display search results with improved card design -->
-                <div class="row g-3">
-                    @foreach($searchResults as $field)
-                        <div class="col-lg-3 col-md-4 col-sm-6">
-                            <a href="" class="text-decoration-none">
-                                <div class="card search-result-card h-100">
-                                    <div class="field-image-container">
-                                        <img src="{{ asset($field->main_image_path ?? 'img/default-field.jpg') }}" class="card-img-top" alt="{{ $field->name }}">
-                                        <div class="field-type-badge">
-                                            <span class="badge bg-primary">{{ $field->type }}</span>
-                                        </div>
-                                        @if($field->rating >= 4.5)
-                                            <div class="top-rated-badge">
-                                                <span class="badge bg-success"><i class="bi bi-award"></i> Top Rated</span>
-                                            </div>
-                                        @endif
-                                    </div>
-                                    <div class="card-body p-3">
-                                        <h6 class="card-title text-truncate mb-1">{{ $field->name }}</h6>
-                                        <div class="field-meta mb-2">
-                                            <span class="rating me-2">
-                                                <i class="bi bi-star-fill text-warning"></i>
-                                                {{ number_format($field->rating, 1) }}
-                                            </span>
-                                            
-                                        </div>
-                                        <div class="field-features d-flex flex-wrap gap-2 mb-2">
-                                            <span class="feature-tag">
-                                                @if($field->is_covered == 1)
-                                                    <i class="fas fa-home text-secondary"></i> Indoor
-                                                @else
-                                                    <i class="fas fa-sun text-warning"></i> Outdoor
-                                                @endif
-                                            </span>
-                                            <span class="feature-tag">
-                                                <i class="fas fa-ruler"></i> {{ $field->size }}
-                                            </span>
-                                        </div>
-                                        <div class="price-book-row d-flex justify-content-between align-items-center">
-                                            <span class="price-tag">${{ number_format($field->fees, 2) }}/hr</span>
-                                            <button class="btn btn-sm btn-primary book-btn">Book</button>
-                                        </div>
-                                    </div>
+  <!-- Search Results Section (Replaces Recommended Fields Section) -->
+<section id="search-results" class="book-a-table section py-4">
+    <div class="container section-title">
+        @if(isset($searchResults))
+            <h2>Search Results</h2>
+            <div>
+                <span>Found</span> 
+                <span class="description-title">{{ $resultsCount }} Venues</span>
+            </div>
+        @else
+            <h2>Book a Venue</h2>
+            <div>
+                <span>Recommended</span> 
+                <span class="description-title">Venue</span>
+            </div>
+        @endif
+    </div>
+
+    <div class="container">
+        @if(isset($searchResults) && count($searchResults) > 0)
+            <!-- Display search results with improved card design -->
+            <div class="row g-3">
+                @foreach($searchResults as $field)
+                    <div class="col-lg-3 col-md-4 col-sm-6">
+                        <div class="card search-result-card h-100">
+                            <div class="field-image-container">
+                                <img src="{{ asset($field->main_image_path ?? 'img/default-field.jpg') }}" class="card-img-top" alt="{{ $field->name }}">
+                                <div class="field-type-badge">
+                                    <span class="badge bg-primary">{{ $field->type }}</span>
                                 </div>
-                            </a>
+                                @if($field->rating >= 4.5)
+                                    <div class="top-rated-badge">
+                                        <span class="badge bg-success"><i class="bi bi-award"></i> Top Rated</span>
+                                    </div>
+                                @endif
+                            </div>
+                            <div class="card-body p-3">
+                                <h6 class="card-title text-truncate mb-1">{{ $field->name }}</h6>
+                                <div class="field-meta mb-2">
+                                    <span class="rating me-2">
+                                        <i class="bi bi-star-fill text-warning"></i>
+                                        {{ number_format($field->rating, 1) }}
+                                    </span>
+                                </div>
+                                <div class="field-features d-flex flex-wrap gap-2 mb-2">
+                                    <span class="feature-tag">
+                                        @if($field->is_covered == 1)
+                                            <i class="fas fa-home text-secondary"></i> Indoor
+                                        @else
+                                            <i class="fas fa-sun text-warning"></i> Outdoor
+                                        @endif
+                                    </span>
+                                    <span class="feature-tag">
+                                        <i class="fas fa-ruler"></i> {{ $field->size }}
+                                    </span>
+                                </div>
+                                <div class="price-book-row d-flex justify-content-between align-items-center">
+                                    <span class="price-tag">${{ number_format($field->fees, 2) }}/hr</span>
+                                    <a href="{{ route('booking.show', ['player' => '11', 'field' => $field->id]) }}" class="btn btn-sm btn-primary">Book</a>
+                                </div>
+                            </div>
                         </div>
-                    @endforeach
-                </div>
-                
-                <!-- Pagination links -->
-                <div class="d-flex justify-content-center mt-4">
-                    {{ $searchResults->appends(request()->query())->links() }}
-                </div>
-                
-            @elseif(isset($searchResults) && count($searchResults) == 0)
-                <!-- No results message -->
-                <div class="alert alert-info text-center">
-                    <i class="bi bi-info-circle me-2"></i>
-                    No fields match your search criteria. Please try different search terms.
-                </div>
-                
-            @else
-                <!-- Updated recommendation carousel with fixed 3-column layout -->
-             
-                <!-- Sport Fields Card -->
-                <div class="container">
-                    <div id="field-carousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="3000">
-                        <div class="carousel-inner">
-                            @php
-                                // Filter fields with rating > 4.8 and chunk into groups of 3
-                                $highRatedFields = $fields->filter(function($field) {
-                                    return $field['rating'] > 4.8;
-                                })->chunk(3);
-                            @endphp
-                                
-                            @foreach($highRatedFields as $index => $chunk)
-                            @if(count($chunk)==3)
-                                <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
-                                    <div class="carousel-container row justify-content-center">
-                                        
-                                        @foreach($chunk as $field)
-                                            <div class="col-md-4 d-flex justify-content-center">
-                                                <a href="{{ route('booking.show', ['player' => '11', 'field' => $field['id']]) }}" class="text-decoration-none">
-                                                    <div class="card field-card small-card">
-                                                        <img src="{{ asset($field['main_image_path']) }}" class="card-img-top" alt="{{ $field['name'] }}">
-                                                        <div class="card-body p-2">
-                                                            <h6 class="card-title mb-1">{{ $field['name'] }}</h6>
-                                                            <span class="badge bg-primary mb-2">{{ $field['type'] }}</span>
-                                                            <div class="rating text-warning small">
-                                                                <i class="bi bi-star-fill"></i>
-                                                                {{ number_format($field['rating'], 1) }}
-                                                                <span class="badge bg-success ms-1">Top Rated</span>
-                                                            </div>
+                    </div>
+                @endforeach
+            </div>
+            
+            <!-- Fixed Pagination links -->
+            <div class="d-flex justify-content-center mt-4">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination">
+                        {{-- Previous Page Link --}}
+                        @if ($searchResults->onFirstPage())
+                            <li class="page-item disabled">
+                                <span class="page-link"><i class="bi bi-chevron-left"></i></span>
+                            </li>
+                        @else
+                            <li class="page-item">
+                                <a class="page-link" href="{{ $searchResults->previousPageUrl() }}" rel="prev">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+                        @endif
+
+                        {{-- Pagination Elements --}}
+                        @foreach ($searchResults->getUrlRange(1, $searchResults->lastPage()) as $page => $url)
+                            @if ($page == $searchResults->currentPage())
+                                <li class="page-item active">
+                                    <span class="page-link">{{ $page }}</span>
+                                </li>
+                            @else
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ $url }}">{{ $page }}</a>
+                                </li>
+                            @endif
+                        @endforeach
+
+                        {{-- Next Page Link --}}
+                        @if ($searchResults->hasMorePages())
+                            <li class="page-item">
+                                <a class="page-link" href="{{ $searchResults->nextPageUrl() }}" rel="next">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        @else
+                            <li class="page-item disabled">
+                                <span class="page-link"><i class="bi bi-chevron-right"></i></span>
+                            </li>
+                        @endif
+                    </ul>
+                </nav>
+            </div>
+            
+        @elseif(isset($searchResults) && count($searchResults) == 0)
+            <!-- No results message -->
+            <div class="alert alert-info text-center">
+                <i class="bi bi-info-circle me-2"></i>
+                No fields match your search criteria. Please try different search terms.
+            </div>
+            
+        @else
+            <!-- Updated recommendation carousel with fixed 3-column layout -->
+            <div class="container">
+                <div id="field-carousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="3000">
+                    <div class="carousel-inner">
+                        @php
+                            // Filter fields with rating > 4.8 and chunk into groups of 3
+                            $highRatedFields = $fields->filter(function($field) {
+                                return $field['rating'] > 4.8;
+                            })->chunk(3);
+                        @endphp
+                            
+                        @foreach($highRatedFields as $index => $chunk)
+                        @if(count($chunk)==3)
+                            <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
+                                <div class="carousel-container row justify-content-center">
+                                    
+                                    @foreach($chunk as $field)
+                                        <div class="col-md-4 d-flex justify-content-center">
+                                            <a href="{{ route('booking.show', ['player' => '11', 'field' => $field['id']]) }}" class="text-decoration-none">
+                                                <div class="card field-card small-card">
+                                                    <img src="{{ asset($field['main_image_path']) }}" class="card-img-top" alt="{{ $field['name'] }}">
+                                                    <div class="card-body p-2">
+                                                        <h6 class="card-title mb-1">{{ $field['name'] }}</h6>
+                                                        <span class="badge bg-primary mb-2">{{ $field['type'] }}</span>
+                                                        <div class="rating text-warning small">
+                                                            <i class="bi bi-star-fill"></i>
+                                                            {{ number_format($field['rating'], 1) }}
+                                                            <span class="badge bg-success ms-1">Top Rated</span>
                                                         </div>
                                                     </div>
-                                                </a>
-                                            </div>
-                                        @endforeach
-                                       
-                                    </div>
+                                                </div>
+                                            </a>
+                                        </div>
+                                    @endforeach
+                                   
                                 </div>
-                                @endif
-                            @endforeach
-                        </div>
-                            
-                        @if($highRatedFields->count() > 1)
-                            <a class="carousel-control-prev" href="#field-carousel" role="button" data-bs-slide="prev">
-                                <span class="carousel-control-prev-icon bi bi-chevron-left" aria-hidden="true"></span>
-                            </a>
-                            <a class="carousel-control-next" href="#field-carousel" role="button" data-bs-slide="next">
-                                <span class="carousel-control-next-icon bi bi-chevron-right" aria-hidden="true"></span>
-                            </a>
-                        @endif
+                            </div>
+                            @endif
+                        @endforeach
                     </div>
                         
-                    @if($highRatedFields->flatten()->isEmpty())
-                        <div class="alert alert-info mt-4">No fields with rating above 4.8 available currently.</div>
+                    @if($highRatedFields->count() > 1)
+                        <a class="carousel-control-prev" href="#field-carousel" role="button" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon bi bi-chevron-left" aria-hidden="true"></span>
+                        </a>
+                        <a class="carousel-control-next" href="#field-carousel" role="button" data-bs-slide="next">
+                            <span class="carousel-control-next-icon bi bi-chevron-right" aria-hidden="true"></span>
+                        </a>
                     @endif
                 </div>
-    
+                    
+                @if($highRatedFields->flatten()->isEmpty())
+                    <div class="alert alert-info mt-4">No fields with rating above 4.8 available currently.</div>
+                @endif
+            </div>
         @endif
-    </section>
+    </div>
+</section>
+    
     
     <!-- Contact Section -->
     <section id="contact" class="contact section">

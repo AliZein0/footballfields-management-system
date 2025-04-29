@@ -35,9 +35,9 @@ class Booking extends Model
     /**
      * Get the field that owns the booking.
      */
-    public function field()
+    public function sportfield()
     {
-        return $this->belongsTo(SportField::class);
+        return $this->belongsTo(SportField::class , 'field_id');
     }
 
     /**
