@@ -1,505 +1,831 @@
-<x-layout title="Player-Profile">
-<body class="d-flex flex-column min-vh-100 player-profile-page bg-light" >
-  <!-- Original Navbar - Left untouched -->
-<x-player_header></x-player_header>
-
-  <!-- Main Content - Added padding-top to prevent navbar overlap -->
-  <main class="container py-5 flex-grow-1 mt-5" >
-    <div class="row g-4">
-      <!-- Profile Sidebar -->
-      <div class="col-md-4 col-lg-3">
-        <div class="card shadow border-0 rounded-3">
-          <div class="card-header bg-success text-white p-3">
-            <h5 class="mb-0">Player Profile</h5>
-          </div>
-          <div class="card-body text-center bg-white">
-            <div class="position-relative mb-4">
-              <img 
-                src="https://th.bing.com/th/id/OIP.k6-0bR_5ijgMASJ1yl_NiQHaHa?w=250&h=250&c=8&rs=1&qlt=90&o=6&dpr=1.1&pid=3.1&rm=2" 
-                alt="Player profile" 
-                class="rounded-circle profile-img border border-4 border-white mb-3"
-                style="width: 120px; height: 120px; object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.1);"
-              />
-              <span class="position-absolute bottom-0 end-0 bg-success text-white rounded-circle p-1" 
-                    style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border: 2px solid white;">
-                <i class="bi bi-check"></i>
-              </span>
-            </div>
-            <h2 class="h5 fw-bold">Alex Johnson</h2>
-            <p class="text-muted small mb-3">Member since March 2024</p>
-            <div class="d-grid">
-              <button class="btn btn-outline-success btn-sm">
-                <i class="bi bi-pencil-square me-2"></i>Edit Profile
-              </button>
+<x-layout title="Player Profile" bodyClass="player-profile-page bg-light">
+    <x-player_header />
+    
+    <!-- Navbar Separator -->
+    <div class="navbar-separator"></div>
+    
+    <!-- Content spacer -->
+    <div class="content-spacer"></div>
+    
+    <!-- Main Content -->
+    <main class="container py-4">
+        <div class="row g-4">
+            <!-- Profile Sidebar -->
+            <div class="col-md-4 col-lg-3">
+                <div class="card border-0 rounded-4 overflow-hidden shadow-sm">
+                    <div class="card-header bg-primary text-white p-3 border-0">
+                        <h5 class="mb-0 fw-semibold">Player Profile</h5>
+                    </div>
+                    <div class="card-body text-center bg-white p-4">
+                        <div class="position-relative mb-4">
+                            <img 
+                                src="{{ $player->user->profile_photo_url ?? 'https://th.bing.com/th/id/OIP.k6-0bR_5ijgMASJ1yl_NiQHaHa?w=250&h=250&c=8&rs=1&qlt=90&o=6&dpr=1.1&pid=3.1&rm=2' }}" 
+                                alt="Player profile" 
+                                class="rounded-circle profile-img border border-3 border-white mb-3"
+                                style="width: 120px; height: 120px; object-fit: cover;"
+                            />
+                            <span class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle p-1" 
+                                  style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: 2px solid white;">
+                                <i class="fas fa-check"></i>
+                            </span>
+                        </div>
+                        <h2 class="h5 fw-bold mb-1">{{ $player->user->name }}</h2>
+                        <p class="text-muted small mb-3">Member since {{ $player->member_since_formatted }}</p>
+                        <div class="d-grid">
+                            <button id="edit-profile-btn" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-user-edit me-2"></i>Edit Profile
+                            </button>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="profile-nav">
+                            <div class="nav flex-column" id="profile-tabs">
+                                <a href="#profile-tab" class="nav-link active text-start mb-2 d-flex align-items-center" data-tab="profile">
+                                    <i class="fas fa-user me-3"></i> <span>Profile</span>
+                                </a>
+                                
+                                <a href="#venues-tab" class="nav-link text-start mb-2 d-flex align-items-center" data-tab="venues">
+                                    <i class="fas fa-map-marker-alt me-3"></i> <span>Favorite Venues</span>
+                                </a>
+                                <a href="#stats-tab" class="nav-link text-start mb-2 d-flex align-items-center" data-tab="stats">
+                                    <i class="fas fa-chart-line me-3"></i> <span>My Statistics</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             
-            <hr class="my-4">
-            
-            <div class="nav nav-pills flex-column" id="profile-tabs" role="tablist">
-              <button 
-                class="nav-link active text-start mb-2 d-flex align-items-center" 
-                data-tab="profile"
-                type="button"
-              >
-                <i class="bi bi-person me-3"></i> <span>Profile</span>
-              </button>
-              <button 
-                class="nav-link text-start mb-2 d-flex align-items-center" 
-                data-tab="bookings"
-                type="button"
-              >
-                <i class="bi bi-calendar me-3"></i> <span>My Bookings</span>
-              </button>
-              <button 
-                class="nav-link text-start mb-2 d-flex align-items-center" 
-                data-tab="venues"
-                type="button"
-              >
-                <i class="bi bi-geo-alt me-3"></i> <span>Favorite Venues</span>
-              </button>
-              <button 
-                class="nav-link text-start mb-2 d-flex align-items-center" 
-                data-tab="stats"
-                type="button"
-              >
-                <i class="bi bi-graph-up me-3"></i> <span>My Statistics</span>
-              </button>
+            <!-- Content Area -->
+            <div class="col-md-8 col-lg-9">
+                <div class="card border-0 rounded-4 shadow-sm">
+                    <div class="card-body p-4">
+                        <!-- Profile Tab -->
+                        <div id="profile-tab" class="tab-content active">
+                            <!-- View Mode -->
+                            <div id="profile-view-mode" class="profile-mode active">
+                                <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                                    <h3 class="card-title h4 mb-0 fw-bold">Personal Information</h3>
+                                    <div>
+                                        <button id="toggle-edit-mode" class="btn btn-primary btn-sm me-2">
+                                            <i class="fas fa-pencil-alt me-2"></i>Edit Profile
+                                        </button>
+                                        <button id="toggle-password-modal" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#passwordModal">
+                                            <i class="fas fa-lock me-2"></i>Change Password
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="row g-4">
+                                    <div class="col-md-6">
+                                        <div class="p-3 bg-light rounded-3">
+                                            <label class="form-label text-muted small mb-1">Full Name</label>
+                                            <p class="mb-0 fw-medium">{{ $player->user->name }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="p-3 bg-light rounded-3">
+                                            <label class="form-label text-muted small mb-1">Phone Number</label>
+                                            <p class="mb-0 fw-medium">{{ $player->user->phone_number ?? 'Not provided' }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="p-3 bg-light rounded-3">
+                                            <label class="form-label text-muted small mb-1">Member Since</label>
+                                            <p class="mb-0 fw-medium">{{ $player->member_since_formatted }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="p-3 bg-light rounded-3">
+                                            <label class="form-label text-muted small mb-1">Account Status</label>
+                                            <p class="mb-0 fw-medium">
+                                                <span class="badge bg-success">Active</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="p-3 bg-light rounded-3">
+                                            <label class="form-label text-muted small mb-1">Location</label>
+                                            <p class="mb-0 fw-medium">{{ $player->user->address ?? 'Not provided' }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="p-3 bg-light rounded-3">
+                                            <label class="form-label text-muted small mb-1">Preferred Sports</label>
+                                            <p class="mb-0 fw-medium">
+                                                {{$player->sport ?? 'Not provided'}}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Edit Mode -->
+                            <div id="profile-edit-mode" class="profile-mode">
+                                <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                                    <h3 class="card-title h4 mb-0 fw-bold">Edit Profile</h3>
+                                    <div>
+                                        <button id="save-profile" class="btn btn-success btn-sm me-2">
+                                            <i class="fas fa-save me-2"></i>Save Changes
+                                        </button>
+                                        <button id="cancel-edit" class="btn btn-outline-secondary btn-sm">
+                                            <i class="fas fa-times me-2"></i>Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <form id="profile-edit-form" class="needs-validation" novalidate>
+                                    <div class="row g-4">
+                                        <div class="col-md-6">
+                                            <div class="form-floating mb-3">
+                                                <input type="text" class="form-control" id="edit-name" name="name" placeholder="Full Name" value="{{ $player->user->name }}" required>
+                                                <label for="edit-name">Full Name</label>
+                                                <div class="invalid-feedback">Please provide your name.</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-floating mb-3">
+                                                <input type="tel" class="form-control" id="edit-phone" name="phone_number" placeholder="Phone Number" value="{{ $player->user->phone_number }}">
+                                                <label for="edit-phone">Phone Number</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <div class="form-floating mb-3">
+                                                <input type="text" class="form-control" id="edit-address" name="address" placeholder="Address" value="{{ $player->user->address }}">
+                                                <label for="edit-address">Location</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <label class="form-label">Preferred Sports</label>
+                                            <div class="row g-2">
+                                                <div class="col-md-4 col-6">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="sport-football" name="sports[]" value="Football" {{ str_contains($player->sport ?? '', 'Football') ? 'checked' : '' }}>
+                                                        <label class="form-check-label" for="sport-football">Football</label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4 col-6">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="sport-basketball" name="sports[]" value="Basketball" {{ str_contains($player->sport ?? '', 'Basketball') ? 'checked' : '' }}>
+                                                        <label class="form-check-label" for="sport-basketball">Basketball</label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4 col-6">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="sport-tennis" name="sports[]" value="Tennis" {{ str_contains($player->sport ?? '', 'Tennis') ? 'checked' : '' }}>
+                                                        <label class="form-check-label" for="sport-tennis">Tennis</label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4 col-6">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="sport-volleyball" name="sports[]" value="Volleyball" {{ str_contains($player->sport ?? '', 'Volleyball') ? 'checked' : '' }}>
+                                                        <label class="form-check-label" for="sport-volleyball">Volleyball</label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4 col-6">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="sport-futsal" name="sports[]" value="Futsal" {{ str_contains($player->sport ?? '', 'Futsal') ? 'checked' : '' }}>
+                                                        <label class="form-check-label" for="sport-futsal">Futsal</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12 mb-3">
+                                            <label class="form-label">Profile Photo</label>
+                                            <div class="input-group">
+                                                <input type="file" class="form-control" id="edit-photo" name="photo">
+                                                <label class="input-group-text" for="edit-photo">Upload</label>
+                                            </div>
+                                            <div class="form-text">Upload a new profile photo (optional)</div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                       
+
+                        <!-- Venues Tab -->
+                        <div id="venues-tab" class="tab-content">
+                            <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                                <h3 class="card-title h4 mb-0 fw-bold">Favorite Venues</h3>
+                                <a href="" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-search me-2"></i>Find New Venues
+                                </a>
+                            </div>
+                            
+                            <div class="row g-3">
+                                @forelse($player->favoriteVenues as $venue)
+                                    <div class="col-md-6 col-lg-4">
+                                        <div class="card h-100 border-0 shadow-sm rounded-3 overflow-hidden">
+                                            <div class="position-relative">
+                                                <img src="{{ $venue->image_path ?? '/api/placeholder/400/200' }}" class="card-img-top" alt="{{ $venue->name }}">
+                                                <span class="position-absolute top-0 end-0 bg-white m-2 p-2 rounded-circle">
+                                                    <i class="fas fa-star text-warning"></i>
+                                                </span>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <h5 class="card-title mb-0">{{ $venue->name }}</h5>
+                                                </div>
+                                                <p class="card-text text-muted small mb-3">
+                                                    <i class="fas fa-map-marker-alt me-1"></i>{{ $venue->address }}
+                                                </p>
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <p class="text-muted small mb-0">
+                                                        Last visited: {{ $venue->pivot->last_visited ? \Carbon\Carbon::parse($venue->pivot->last_visited)->diffForHumans() : 'Never' }}
+                                                    </p>
+                                                    <a href="" class="btn btn-primary btn-sm">Book Now</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @empty
+                                    <div class="col-12 text-center py-4 text-muted">
+                                        <i class="fas fa-map-marked-alt fs-2 mb-3"></i>
+                                        <p>You don't have any favorite venues yet.</p>
+                                        <a href="" class="btn btn-primary btn-sm">
+                                            Discover Venues
+                                        </a>
+                                    </div>
+                                @endforelse
+                            </div>
+                        </div> 
+
+                        <!-- Stats Tab -->
+                        <div id="stats-tab" class="tab-content">
+                            <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                                <h3 class="card-title h4 mb-0 fw-bold">My Statistics</h3>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary active" data-period="all">All Time</button>
+                                    <button class="btn btn-outline-primary" data-period="month">This Month</button>
+                                    <button class="btn btn-outline-primary" data-period="week">This Week</button>
+                                </div>
+                            </div>
+                            
+                            <div class="row g-4 mb-4">
+                                <div class="col-md-3">
+                                    <div class="card bg-primary bg-opacity-10 border-0 rounded-3 h-100">
+                                        <div class="card-body text-center p-4">
+                                            <i class="fas fa-calendar-check text-primary fs-3 mb-3"></i>
+                                            <h2 class="display-6 fw-bold mb-1">24</h2>
+                                            <p class="text-muted mb-0">Total Bookings</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-3">
+                                    <div class="card bg-primary bg-opacity-10 border-0 rounded-3 h-100">
+                                        <div class="card-body text-center p-4">
+                                            <i class="fas fa-calendar-alt text-primary fs-3 mb-3"></i>
+                                            <h2 class="display-6 fw-bold mb-1">5</h2>
+                                            <p class="text-muted mb-0">Bookings This Month</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-3">
+                                    <div class="card bg-info bg-opacity-10 border-0 rounded-3 h-100">
+                                        <div class="card-body text-center p-4">
+                                            <i class="fas fa-building text-info fs-3 mb-3"></i>
+                                            <h2 class="display-6 fw-bold mb-1">8</h2>
+                                            <p class="text-muted mb-0">Favorite Venues</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-3">
+                                    <div class="card bg-info bg-opacity-10 border-0 rounded-3 h-100">
+                                        <div class="card-body text-center p-4">
+                                            <i class="fas fa-stopwatch text-info fs-3 mb-3"></i>
+                                            <h2 class="display-6 fw-bold mb-1">36</h2>
+                                            <p class="text-muted mb-0">Hours Played</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <div class="card border-0 shadow-sm h-100 rounded-3">
+                                        <div class="card-header bg-white border-bottom-0 pt-3 pb-0">
+                                            <h5 class="card-title mb-0">Sport Preferences</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="chart-container" style="height: 250px;">
+                                                <canvas id="sportPreferencesChart"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="card border-0 shadow-sm h-100 rounded-3">
+                                        <div class="card-header bg-white border-bottom-0 pt-3 pb-0">
+                                            <h5 class="card-title mb-0">Booking Trends</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="chart-container" style="height: 250px;">
+                                                <canvas id="bookingTrendsChart"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-12">
+                                    <div class="card border-0 shadow-sm rounded-3">
+                                        <div class="card-header bg-white border-bottom-0 pt-3 pb-0">
+                                            <h5 class="card-title mb-0">Recent Activity</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table table-hover">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Date</th>
+                                                            <th>Venue</th>
+                                                            <th>Sport</th>
+                                                            <th>Duration</th>
+                                                            <th>Status</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>May 1, 2025</td>
+                                                            <td>Stadium Field #3</td>
+                                                            <td>Football</td>
+                                                            <td>5:00 PM - 7:00 PM</td>
+                                                            <td><span class="badge bg-success">Completed</span></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Apr 28, 2025</td>
+                                                            <td>Central Court</td>
+                                                            <td>Tennis</td>
+                                                            <td>3:00 PM - 5:00 PM</td>
+                                                            <td><span class="badge bg-success">Completed</span></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Apr 25, 2025</td>
+                                                            <td>Sports Complex</td>
+                                                            <td>Basketball</td>
+                                                            <td>7:00 PM - 9:00 PM</td>
+                                                            <td><span class="badge bg-success">Completed</span></td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
         </div>
-      </div>
+    </main>
 
-      <!-- Content Area -->
-      <div class="col-md-8 col-lg-9">
-        <div class="card shadow border-0 rounded-3">
-          <div class="card-body p-4">
-            <!-- Profile Tab -->
-            <div id="profile-tab" class="tab-content active">
-              <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
-                <h3 class="card-title fs-4 mb-0">Personal Information</h3>
-                <div>
-                  <button class="btn btn-success me-2">
-                    <i class="bi bi-pencil me-2"></i>Edit Profile
-                  </button>
-                  <button class="btn btn-outline-secondary">
-                    <i class="bi bi-lock me-2"></i>Change Password
-                  </button>
+    <!-- Change Password Modal -->
+    <div class="modal fade" id="passwordModal" tabindex="-1" aria-labelledby="passwordModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="passwordModalLabel">Change Password</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-              </div>
-              
-              <div class="row g-4">
-                <div class="col-md-6">
-                  <div class="p-3 bg-light rounded-3">
-                    <label class="form-label text-muted small mb-1">Full Name</label>
-                    <p class="mb-0 fw-medium">Alex Johnson</p>
-                  </div>
+                <div class="modal-body">
+                    <form id="password-change-form" class="needs-validation" novalidate>
+                        <div class="mb-3">
+                            <label for="current-password" class="form-label">Current Password</label>
+                            <input type="password" class="form-control" id="current-password" required>
+                            <div class="invalid-feedback">Please enter your current password.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="new-password" class="form-label">New Password</label>
+                            <input type="password" class="form-control" id="new-password" required>
+                            <div class="form-text">
+                                Password must be at least 8 characters and include uppercase, lowercase, number, and special character.
+                            </div>
+                            <div class="invalid-feedback">Please enter a valid new password.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirm-password" class="form-label">Confirm New Password</label>
+                            <input type="password" class="form-control" id="confirm-password" required>
+                            <div class="invalid-feedback">Passwords do not match.</div>
+                        </div>
+                    </form>
                 </div>
-                <div class="col-md-6">
-                  <div class="p-3 bg-light rounded-3">
-                    <label class="form-label text-muted small mb-1">Email Address</label>
-                    <p class="mb-0 fw-medium">alex.johnson@example.com</p>
-                  </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="save-password">Save Changes</button>
                 </div>
-                <div class="col-md-6">
-                  <div class="p-3 bg-light rounded-3">
-                    <label class="form-label text-muted small mb-1">Phone Number</label>
-                    <p class="mb-0 fw-medium">(555) 123-4567</p>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="p-3 bg-light rounded-3">
-                    <label class="form-label text-muted small mb-1">Member Since</label>
-                    <p class="mb-0 fw-medium">March 2024</p>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="p-3 bg-light rounded-3">
-                    <label class="form-label text-muted small mb-1">Location</label>
-                    <p class="mb-0 fw-medium">New York, NY</p>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="p-3 bg-light rounded-3">
-                    <label class="form-label text-muted small mb-1">Preferred Sports</label>
-                    <p class="mb-0 fw-medium">
-                      <span class="badge bg-success me-1">Soccer</span>
-                      <span class="badge bg-info me-1">Tennis</span>
-                      <span class="badge bg-success">Basketball</span>
-                    </p>
-                  </div>
-                </div>
-              </div>
             </div>
-
-            <!-- Bookings Tab -->
-            <div id="bookings-tab" class="tab-content">
-              <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
-                <h3 class="card-title fs-4 mb-0">My Bookings</h3>
-                <button class="btn btn-success">
-                  <i class="bi bi-calendar-plus me-2"></i>Book a Venue
-                </button>
-              </div>
-              
-              <div class="mb-4">
-                <h5 class="text-muted mb-3">Upcoming Bookings</h5>
-                <div class="list-group">
-                  <div class="list-group-item list-group-item-action border-0 shadow-sm rounded-3 p-3 mb-3">
-                    <div class="row align-items-center">
-                      <div class="col-md-1 text-center text-success mb-3 mb-md-0">
-                        <i class="bi bi-calendar-event fs-3"></i>
-                      </div>
-                      <div class="col-md-3 mb-3 mb-md-0">
-                        <span class="badge bg-success mb-2">Soccer</span>
-                        <h6 class="mb-1">Riverside Soccer Complex</h6>
-                        <p class="text-muted mb-0 small">Field #3</p>
-                      </div>
-                      <div class="col-md-5 mb-3 mb-md-0">
-                        <div class="d-flex align-items-center small text-muted mb-2">
-                          <i class="bi bi-calendar me-2"></i>
-                          <span class="me-3">April 15, 2025</span>
-                        </div>
-                        <div class="d-flex align-items-center small text-muted">
-                          <i class="bi bi-clock me-2"></i>
-                          <span>6:00 PM - 8:00 PM</span>
-                        </div>
-                      </div>
-                      <div class="col-md-3 text-md-end">
-                        <button class="btn btn-sm btn-outline-success me-1">
-                          <i class="bi bi-pencil"></i> Edit
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger">
-                          <i class="bi bi-x-circle"></i> Cancel
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="list-group-item list-group-item-action border-0 shadow-sm rounded-3 p-3">
-                    <div class="row align-items-center">
-                      <div class="col-md-1 text-center text-info mb-3 mb-md-0">
-                        <i class="bi bi-calendar-event fs-3"></i>
-                      </div>
-                      <div class="col-md-3 mb-3 mb-md-0">
-                        <span class="badge bg-info mb-2">Tennis</span>
-                        <h6 class="mb-1">Central Tennis Courts</h6>
-                        <p class="text-muted mb-0 small">Court #2</p>
-                      </div>
-                      <div class="col-md-5 mb-3 mb-md-0">
-                        <div class="d-flex align-items-center small text-muted mb-2">
-                          <i class="bi bi-calendar me-2"></i>
-                          <span class="me-3">April 18, 2025</span>
-                        </div>
-                        <div class="d-flex align-items-center small text-muted">
-                          <i class="bi bi-clock me-2"></i>
-                          <span>4:30 PM - 6:00 PM</span>
-                        </div>
-                      </div>
-                      <div class="col-md-3 text-md-end">
-                        <button class="btn btn-sm btn-outline-success me-1">
-                          <i class="bi bi-pencil"></i> Edit
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger">
-                          <i class="bi bi-x-circle"></i> Cancel
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div class="text-center mt-4">
-                <button class="btn btn-outline-success">
-                  <i class="bi bi-clock-history me-2"></i>View Booking History
-                </button>
-              </div>
-            </div>
-
-            <!-- Venues Tab -->
-            <div id="venues-tab" class="tab-content">
-              <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
-                <h3 class="card-title fs-4 mb-0">Favorite Venues</h3>
-                <button class="btn btn-success">
-                  <i class="bi bi-search me-2"></i>Find New Venues
-                </button>
-              </div>
-              
-              <div class="row g-3">
-                <div class="col-md-6 col-lg-4">
-                  <div class="card h-100 border-0 shadow-sm">
-                    <div class="position-relative">
-                      <img src="/api/placeholder/400/200" class="card-img-top" alt="Riverside Soccer Complex">
-                      <span class="position-absolute top-0 end-0 bg-white m-2 p-2 rounded-circle">
-                        <i class="bi bi-star-fill text-warning"></i>
-                      </span>
-                    </div>
-                    <div class="card-body">
-                      <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h5 class="card-title mb-0">Riverside Soccer Complex</h5>
-                      </div>
-                      <p class="card-text text-muted small mb-3">
-                        <i class="bi bi-geo-alt me-1"></i>123 River Rd
-                      </p>
-                      <div class="d-flex justify-content-between align-items-center">
-                        <p class="text-muted small mb-0">Last visited: 2 days ago</p>
-                        <button class="btn btn-success btn-sm">Book Now</button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div class="col-md-6 col-lg-4">
-                  <div class="card h-100 border-0 shadow-sm">
-                    <div class="position-relative">
-                      <img src="/api/placeholder/400/200" class="card-img-top" alt="Central Tennis Courts">
-                      <span class="position-absolute top-0 end-0 bg-white m-2 p-2 rounded-circle">
-                        <i class="bi bi-star-fill text-warning"></i>
-                      </span>
-                    </div>
-                    <div class="card-body">
-                      <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h5 class="card-title mb-0">Central Tennis Courts</h5>
-                      </div>
-                      <p class="card-text text-muted small mb-3">
-                        <i class="bi bi-geo-alt me-1"></i>45 Park Ave
-                      </p>
-                      <div class="d-flex justify-content-between align-items-center">
-                        <p class="text-muted small mb-0">Last visited: 1 week ago</p>
-                        <button class="btn btn-success btn-sm">Book Now</button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div class="col-md-6 col-lg-4">
-                  <div class="card h-100 border-0 shadow-sm">
-                    <div class="position-relative">
-                      <img src="/api/placeholder/400/200" class="card-img-top" alt="Westside Basketball Courts">
-                      <span class="position-absolute top-0 end-0 bg-white m-2 p-2 rounded-circle">
-                        <i class="bi bi-star-fill text-warning"></i>
-                      </span>
-                    </div>
-                    <div class="card-body">
-                      <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h5 class="card-title mb-0">Westside Basketball Courts</h5>
-                      </div>
-                      <p class="card-text text-muted small mb-3">
-                        <i class="bi bi-geo-alt me-1"></i>78 West Blvd
-                      </p>
-                      <div class="d-flex justify-content-between align-items-center">
-                        <p class="text-muted small mb-0">Last visited: 2 weeks ago</p>
-                        <button class="btn btn-success btn-sm">Book Now</button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Stats Tab -->
-            <div id="stats-tab" class="tab-content">
-              <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
-                <h3 class="card-title fs-4 mb-0">My Statistics</h3>
-                <div class="btn-group btn-group-sm">
-                  <button class="btn btn-outline-success active">All Time</button>
-                  <button class="btn btn-outline-success">This Month</button>
-                  <button class="btn btn-outline-success">This Week</button>
-                </div>
-              </div>
-              
-              <div class="row g-4 mb-4">
-                <div class="col-md-3">
-                  <div class="card bg-success bg-opacity-10 border-0 rounded-3 h-100">
-                    <div class="card-body text-center p-4">
-                      <i class="bi bi-calendar-check text-success fs-3 mb-3"></i>
-                      <h2 class="display-6 fw-bold mb-1">37</h2>
-                      <p class="text-muted mb-0">Total Bookings</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div class="col-md-3">
-                  <div class="card bg-success bg-opacity-10 border-0 rounded-3 h-100">
-                    <div class="card-body text-center p-4">
-                      <i class="bi bi-calendar text-success fs-3 mb-3"></i>
-                      <h2 class="display-6 fw-bold mb-1">5</h2>
-                      <p class="text-muted mb-0">Bookings This Month</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div class="col-md-3">
-                  <div class="card bg-info bg-opacity-10 border-0 rounded-3 h-100">
-                    <div class="card-body text-center p-4">
-                      <i class="bi bi-building text-info fs-3 mb-3"></i>
-                      <h2 class="display-6 fw-bold mb-1">3</h2>
-                      <p class="text-muted mb-0">Favorite Venues</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div class="col-md-3">
-                  <div class="card bg-warning bg-opacity-10 border-0 rounded-3 h-100">
-                    <div class="card-body text-center p-4">
-                      <i class="bi bi-stopwatch text-warning fs-3 mb-3"></i>
-                      <h2 class="display-6 fw-bold mb-1">1.5</h2>
-                      <p class="text-muted mb-0">Average Play Time</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div class="row g-4">
-                <div class="col-md-6">
-                  <div class="card border-0 shadow-sm h-100">
-                    <div class="card-header bg-white border-0">
-                      <h5 class="card-title mb-0">Sport Preferences</h5>
-                    </div>
-                    <div class="card-body">
-                      <div class="mb-3">
-                        <div class="d-flex justify-content-between mb-1">
-                          <span>Soccer</span>
-                          <span class="text-muted">65%</span>
-                        </div>
-                        <div class="progress" style="height: 8px;">
-                          <div class="progress-bar bg-success" role="progressbar" style="width: 65%"></div>
-                        </div>
-                      </div>
-                      <div class="mb-3">
-                        <div class="d-flex justify-content-between mb-1">
-                          <span>Tennis</span>
-                          <span class="text-muted">25%</span>
-                        </div>
-                        <div class="progress" style="height: 8px;">
-                          <div class="progress-bar bg-info" role="progressbar" style="width: 25%"></div>
-                        </div>
-                      </div>
-                      <div>
-                        <div class="d-flex justify-content-between mb-1">
-                          <span>Basketball</span>
-                          <span class="text-muted">10%</span>
-                        </div>
-                        <div class="progress" style="height: 8px;">
-                          <div class="progress-bar bg-success" role="progressbar" style="width: 10%"></div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div class="col-md-6">
-                  <div class="card border-0 shadow-sm h-100">
-                    <div class="card-header bg-white border-0">
-                      <h5 class="card-title mb-0">Most Visited Venues</h5>
-                    </div>
-                    <div class="card-body">
-                      <div class="mb-3">
-                        <div class="d-flex justify-content-between mb-1">
-                          <span>Riverside Soccer Complex</span>
-                          <span class="text-muted">18 visits</span>
-                        </div>
-                        <div class="progress" style="height: 8px;">
-                          <div class="progress-bar bg-success" role="progressbar" style="width: 75%"></div>
-                        </div>
-                      </div>
-                      <div class="mb-3">
-                        <div class="d-flex justify-content-between mb-1">
-                          <span>Central Tennis Courts</span>
-                          <span class="text-muted">12 visits</span>
-                        </div>
-                        <div class="progress" style="height: 8px;">
-                          <div class="progress-bar bg-info" role="progressbar" style="width: 50%"></div>
-                        </div>
-                      </div>
-                      <div>
-                        <div class="d-flex justify-content-between mb-1">
-                          <span>Westside Basketball Courts</span>
-                          <span class="text-muted">7 visits</span>
-                        </div>
-                        <div class="progress" style="height: 8px;">
-                          <div class="progress-bar bg-success" role="progressbar" style="width: 30%"></div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div class="mt-4">
-                <h5 class="text-muted mb-3">Achievements</h5>
-                <div class="row g-3">
-                  <div class="col-md-6">
-                    <div class="card border-0 bg-success bg-opacity-10 rounded-3">
-                      <div class="card-body d-flex align-items-center p-3">
-                        <div class="rounded-circle bg-white p-3 me-3 shadow-sm">
-                          <i class="bi bi-award text-success fs-4"></i>
-                        </div>
-                        <div>
-                          <h6 class="card-title fw-bold mb-1">Regular Player</h6>
-                          <p class="card-text small text-muted mb-0">5+ bookings per month</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <div class="card border-0 bg-success bg-opacity-10 rounded-3">
-                      <div class="card-body d-flex align-items-center p-3">
-                        <div class="rounded-circle bg-white p-3 me-3 shadow-sm">
-                          <i class="bi bi-trophy text-success fs-4"></i>
-                        </div>
-                        <div>
-                          <h6 class="card-title fw-bold mb-1">Venue Explorer</h6>
-                          <p class="card-text small text-muted mb-0">Visited 5+ different venues</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
-      </div>
     </div>
-  </main>
 
-  <!-- Footer -->
- 
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // Tab switching functionality
-      const tabButtons = document.querySelectorAll('[data-tab]');
-      const tabContents = document.querySelectorAll('.tab-content');
-      
-      tabButtons.forEach(button => {
-        button.addEventListener('click', function() {
-          const tabName = this.getAttribute('data-tab');
-          
-          // Update active tab button
-          tabButtons.forEach(btn => {
-            btn.classList.remove('active');
-          });
-          this.classList.add('active');
-          
-          // Show active tab content
-          tabContents.forEach(content => {
-            content.classList.remove('active');
-          });
-          document.getElementById(`${tabName}-tab`).classList.add('active');
+    <!-- Footer -->
+    <footer class="bg-dark text-white mt-5 py-4">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <h6 class="mb-3">Stay Connected</h6>
+                    <div class="d-flex gap-3 mb-3">
+                        <a href="#" class="text-white"><i class="fab fa-facebook-f fs-5"></i></a>
+                        <a href="#" class="text-white"><i class="fab fa-twitter fs-5"></i></a>
+                        <a href="#" class="text-white"><i class="fab fa-instagram fs-5"></i></a>
+                    </div>
+                    <form class="mb-3">
+                        <div class="input-group">
+                            <input type="email" class="form-control" placeholder="Email address">
+                            <button class="btn btn-primary" type="submit">Subscribe</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="d-flex flex-column flex-sm-row justify-content-between">
+                <p>&copy; 2023 SportBooker. All rights reserved.</p>
+                <ul class="list-unstyled d-flex">
+                    <li class="ms-3"><a class="text-muted" href="">Privacy Policy</a></li>
+                    <li class="ms-3"><a class="text-muted" href="">Terms of Use</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Add the navbar separator and spacing styles -->
+    <style>
+    /* Navbar Separator - Creates a visible line between navbar and content */
+    .navbar-separator {
+        position: fixed;
+        top: 70px; /* Same as navbar height */
+        left: 0;
+        right: 0;
+        height: 1px;
+        background-color: #e0e0e0;
+        z-index: 999;
+    }
+
+    /* Content spacer - Creates space between navbar and content */
+    .content-spacer {
+        height: 80px; /* Navbar height + extra space */
+        width: 100%;
+    }
+    
+    /* Profile Image Styles */
+    .profile-img {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Profile Nav Styling - Fixed blue line issue */
+    .profile-nav .nav-link {
+        color: #6c757d;
+        border-radius: 0.5rem;
+        padding: 0.7rem 1rem;
+        transition: all 0.3s ease;
+        position: relative;
+        border: none !important;
+    }
+    
+    .profile-nav .nav-link:hover {
+        background-color: rgba(0, 102, 204, 0.05);
+        color: #0066cc;
+    }
+    
+    .profile-nav .nav-link.active {
+        background-color: rgba(0, 102, 204, 0.1);
+        color: #0066cc;
+        font-weight: 500;
+        border: none !important;
+    }
+    
+    .profile-nav .nav-link.active:after {
+        display: none !important;
+    }
+    
+    .profile-nav .nav-link i {
+        width: 20px;
+        text-align: center;
+    }
+    
+    /* Tab Content Styling */
+    .tab-content {
+        display: none;
+    }
+    
+    .tab-content.active {
+        display: block;
+    }
+    
+    /* Profile Mode Styling */
+    .profile-mode {
+        display: none;
+    }
+    
+    .profile-mode.active {
+        display: block;
+    }
+    
+    /* Card Styling */
+    .card {
+        transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-3px);
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 767px) {
+        .content-spacer {
+            height: 70px;
+        }
+        
+        main.container {
+            padding-bottom: 80px; /* Space for bottom nav on mobile */
+        }
+    }
+    </style>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab switching functionality
+            const tabLinks = document.querySelectorAll('[data-tab]');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const tabName = this.getAttribute('data-tab');
+                    
+                    // Update active tab button
+                    tabLinks.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Show selected tab content
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    document.getElementById(tabName + '-tab').classList.add('active');
+                });
+            });
+            
+            // Profile edit mode toggle
+            const viewMode = document.getElementById('profile-view-mode');
+            const editMode = document.getElementById('profile-edit-mode');
+            const toggleEditBtn = document.getElementById('toggle-edit-mode');
+            const editProfileBtn = document.getElementById('edit-profile-btn');
+            const saveProfileBtn = document.getElementById('save-profile');
+            const cancelEditBtn = document.getElementById('cancel-edit');
+            
+            function showEditMode() {
+                viewMode.classList.remove('active');
+                editMode.classList.add('active');
+            }
+            
+            function showViewMode() {
+                editMode.classList.remove('active');
+                viewMode.classList.add('active');
+            }
+            
+            if (toggleEditBtn) toggleEditBtn.addEventListener('click', showEditMode);
+            if (editProfileBtn) editProfileBtn.addEventListener('click', showEditMode);
+            if (cancelEditBtn) cancelEditBtn.addEventListener('click', showViewMode);
+            
+            // Form submission handling
+            if (saveProfileBtn) {
+                saveProfileBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Validate form
+                    const form = document.getElementById('profile-edit-form');
+                    if (!form.checkValidity()) {
+                        form.classList.add('was-validated');
+                        return;
+                    }
+                    
+                    // Simulate AJAX form submission
+                    const formData = new FormData(form);
+                    
+                    // Show loading state
+                    saveProfileBtn.disabled = true;
+                    saveProfileBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...';
+                    
+                    // Simulate server delay
+                    setTimeout(function() {
+                        // Update profile data in view mode
+                        const name = formData.get('name');
+                        const phone = formData.get('phone_number');
+                        const address = formData.get('address');
+                        
+                        // Update profile view with new data
+                        document.querySelector('.profile-img').parentElement.nextElementSibling.textContent = name;
+                        
+                        const profileInfoEls = document.querySelectorAll('#profile-view-mode .fw-medium');
+                        profileInfoEls[0].textContent = name;
+                        profileInfoEls[1].textContent = phone || 'Not provided';
+                        profileInfoEls[4].textContent = address || 'Not provided';
+                        
+                        // Show success message
+                        const toast = document.createElement('div');
+                        toast.className = 'position-fixed bottom-0 end-0 p-3';
+                        toast.style.zIndex = '9999';
+                        toast.innerHTML = `
+                            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+                                <div class="toast-header bg-success text-white">
+                                    <strong class="me-auto">Success</strong>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+                                </div>
+                                <div class="toast-body">
+                                    Your profile has been updated successfully.
+                                </div>
+                            </div>
+                        `;
+                        document.body.appendChild(toast);
+                        
+                        // Return to view mode
+                        showViewMode();
+                        
+                        // Reset form state
+                        saveProfileBtn.disabled = false;
+                        saveProfileBtn.innerHTML = '<i class="fas fa-save me-2"></i>Save Changes';
+                        
+                        // Remove toast after 3 seconds
+                        setTimeout(function() {
+                            toast.remove();
+                        }, 3000);
+                    }, 1000);
+                });
+            }
+            
+            // Password change handling
+            const savePasswordBtn = document.getElementById('save-password');
+            if (savePasswordBtn) {
+                savePasswordBtn.addEventListener('click', function() {
+                    const form = document.getElementById('password-change-form');
+                    if (!form.checkValidity()) {
+                        form.classList.add('was-validated');
+                        return;
+                    }
+                    
+                    const newPassword = document.getElementById('new-password').value;
+                    const confirmPassword = document.getElementById('confirm-password').value;
+                    
+                    if (newPassword !== confirmPassword) {
+                        document.getElementById('confirm-password').setCustomValidity('Passwords do not match');
+                        form.classList.add('was-validated');
+                        return;
+                    }
+                    
+                    // Simulate AJAX password change
+                    savePasswordBtn.disabled = true;
+                    savePasswordBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...';
+                    
+                    setTimeout(function() {
+                        // Hide modal
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('passwordModal'));
+                        modal.hide();
+                        
+                        // Show success message
+                        const toast = document.createElement('div');
+                        toast.className = 'position-fixed bottom-0 end-0 p-3';
+                        toast.style.zIndex = '9999';
+                        toast.innerHTML = `
+                            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+                                <div class="toast-header bg-success text-white">
+                                    <strong class="me-auto">Success</strong>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+                                </div>
+                                <div class="toast-body">
+                                    Your password has been changed successfully.
+                                </div>
+                            </div>
+                        `;
+                        document.body.appendChild(toast);
+                        
+                        // Reset form
+                        form.reset();
+                        form.classList.remove('was-validated');
+                        savePasswordBtn.disabled = false;
+                        savePasswordBtn.innerHTML = 'Save Changes';
+                        
+                        // Remove toast after 3 seconds
+                        setTimeout(function() {
+                            toast.remove();
+                        }, 3000);
+                    }, 1000);
+                });
+            }
+            
+            // Initialize sample charts
+            const sportPrefCtx = document.getElementById('sportPreferencesChart').getContext('2d');
+            const sportPreferencesChart = new Chart(sportPrefCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Football', 'Basketball', 'Tennis', 'Volleyball'],
+                    datasets: [{
+                        data: [35, 25, 20, 20],
+                        backgroundColor: [
+                            '#0066cc',
+                            '#ff4757',
+                            '#ffc107',
+                            '#28a745'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+            
+            const bookingTrendsCtx = document.getElementById('bookingTrendsChart').getContext('2d');
+            const bookingTrendsChart = new Chart(bookingTrendsCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Number of Bookings',
+                        data: [5, 8, 12, 10, 15, 20],
+                        borderColor: '#0066cc',
+                        backgroundColor: 'rgba(0, 102, 204, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Handle stats period buttons
+            const periodButtons = document.querySelectorAll('[data-period]');
+            periodButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    periodButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const period = this.getAttribute('data-period');
+                    
+                    // Here you would fetch and update stats based on the period
+                    // This is a placeholder for the AJAX call
+                    console.log(`Fetching stats for period: ${period}`);
+                    
+                    // Simulate data update for demo purposes
+                    if (period === 'week') {
+                        updateCharts({
+                            sports_labels: ['Football', 'Basketball', 'Tennis'],
+                            sports_data: [60, 30, 10],
+                            months_labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                            months_data: [2, 3, 1, 4, 2, 5, 3]
+                        });
+                    } else if (period === 'month') {
+                        updateCharts({
+                            sports_labels: ['Football', 'Basketball', 'Tennis', 'Volleyball'],
+                            sports_data: [45, 25, 20, 10],
+                            months_labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                            months_data: [8, 12, 15, 10]
+                        });
+                    } else {
+                        updateCharts({
+                            sports_labels: ['Football', 'Basketball', 'Tennis', 'Volleyball'],
+                            sports_data: [35, 25, 20, 20],
+                            months_labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                            months_data: [5, 8, 12, 10, 15, 20]
+                        });
+                    }
+                });
+            });
+            
+            function updateCharts(data) {
+                // Update Sports Preferences Chart
+                sportPreferencesChart.data.labels = data.sports_labels;
+                sportPreferencesChart.data.datasets[0].data = data.sports_data;
+                sportPreferencesChart.update();
+                
+                // Update Booking Trends Chart
+                bookingTrendsChart.data.labels = data.months_labels;
+                bookingTrendsChart.data.datasets[0].data = data.months_data;
+                bookingTrendsChart.update();
+            }
         });
-      });
-      
-      // Mobile navigation toggle
-      const mobileNavToggle = document.querySelector('.mobile-nav-toggle');
-      const navmenu = document.querySelector('.navmenu ul');
-      
-      if (mobileNavToggle) {
-        mobileNavToggle.addEventListener('click', function() {
-          navmenu.classList.toggle('d-block');
-          this.classList.toggle('bi-list');
-          this.classList.toggle('bi-x');
-        });
-      }
-    });
-  </script>
-
-
+    </script>
 </x-layout>
