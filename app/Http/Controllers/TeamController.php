@@ -2,12 +2,313 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Team;
+use App\Models\User;
+use App\Models\Player;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class TeamController extends Controller
 {
-    function create(){
+    /**
+     * Display a listing of teams.
+     */
+    public function index()
+    {
+        $teams = Team::with('captain')->paginate(10);
+        return view('teams.index', compact('teams'));
+    }
+
+    /**
+     * Show the form for creating a new team.
+     */
+    public function create()
+    {
+        // This action is protected by the NoTeamMiddleware
         return view('teams.create');
-    } 
-       
+    }
+
+    /**
+     * Store a newly created team in storage.
+     */
+    public function store(Request $request)
+    {
+        // Validate the request
+        $validated = $request->validate([
+            'teamName' => 'required|string|max:255',
+            'sportType' => 'required|string',
+            'teamSize' => 'required|integer',
+            'teamDescription' => 'nullable|string',
+            'homeVenue' => 'nullable|string|max:255',
+            'foundingDate' => 'nullable|date',
+            'teamLogo' => 'nullable|image|max:5120', // 5MB max
+            'teamMotto' => 'nullable|string|max:255',
+            'twitterHandle' => 'nullable|string|max:255',
+            'instagramHandle' => 'nullable|string|max:255',
+            'facebookPage' => 'nullable|string|max:255',
+        ]);
+
+        // Create a new team
+        $team = new Team();
+        $team->name = $validated['teamName'];
+        $team->sport_type = $validated['sportType'];
+        $team->size = $validated['teamSize'];
+        $team->description = $validated['teamDescription'] ?? null;
+        $team->home_venue = $validated['homeVenue'] ?? null;
+        $team->founded_date = $validated['foundingDate'] ?? null;
+        $team->motto = $validated['teamMotto'] ?? null;
+        $team->twitter_handle = $validated['twitterHandle'] ?? null;
+        $team->instagram_handle = $validated['instagramHandle'] ?? null;
+        $team->facebook_page = $validated['facebookPage'] ?? null;
+        $team->captain_id = Auth::id();
+
+        // Handle logo upload if present
+        if ($request->hasFile('teamLogo')) {
+            $path = $request->file('teamLogo')->store('team-logos', 'public');
+            $team->logo_path = $path;
+        }
+
+        // Start a transaction
+        DB::beginTransaction();
+        
+        try {
+            // Save the team
+            $team->save();
+
+            // Get the user and their player profile
+            $user = Auth::user();
+            $player = Player::find($user->id);
+
+            // If the user doesn't have a player profile, create one
+            if (!$player) {
+                $player = new Player();
+                // Since Player's primary key is defined as non-incrementing,
+                // we need to manually set it to the user's ID
+                $player->id = $user->id;
+                $player->sport = $validated['sportType'];
+            }
+
+            // Update the player's team association
+            $player->team_id = $team->id;
+            $player->save();
+
+            // Commit the transaction
+            DB::commit();
+
+            return redirect()->route('teams.show', $team)
+                ->with('success', 'Team created successfully!');
+        } catch (\Exception $e) {
+            // Something went wrong, rollback
+            DB::rollBack();
+            
+            return back()->withErrors(['error' => 'Failed to create team: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Display the specified team.
+     */
+    public function show(Team $team)
+    {
+        // Load team with related data - captain and player profiles
+        $team->load(['captain']);
+        
+        // Get players for this team
+        $players = Player::where('team_id', $team->id)
+                        ->with('user')
+                        ->get();
+        
+        return view('teams.show', compact('team', 'players'));
+    }
+
+    /**
+     * Show the form for editing the specified team.
+     */
+    public function edit(Team $team)
+    {
+        // Authorization: only team captain can edit
+        if (Auth::id() !== $team->captain_id) {
+            return redirect()->route('teams.show', $team)
+                ->with('error', 'You do not have permission to edit this team.');
+        }
+
+        return view('teams.edit', compact('team'));
+    }
+
+    /**
+     * Update the specified team in storage.
+     */
+    public function update(Request $request, Team $team)
+    {
+        // Authorization: only team captain can update
+        if (Auth::id() !== $team->captain_id) {
+            return redirect()->route('teams.show', $team)
+                ->with('error', 'You do not have permission to update this team.');
+        }
+
+        // Validate the request
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'sport_type' => 'required|string',
+            'size' => 'required|integer',
+            'description' => 'nullable|string',
+            'home_venue' => 'nullable|string|max:255',
+            'founded_date' => 'nullable|date',
+            'logo' => 'nullable|image|max:5120', // 5MB max
+            'motto' => 'nullable|string|max:255',
+            'twitter_handle' => 'nullable|string|max:255',
+            'instagram_handle' => 'nullable|string|max:255',
+            'facebook_page' => 'nullable|string|max:255',
+        ]);
+
+        // Handle logo upload if present
+        if ($request->hasFile('logo')) {
+            // Delete old logo if exists
+            if ($team->logo_path) {
+                Storage::disk('public')->delete($team->logo_path);
+            }
+            
+            $path = $request->file('logo')->store('team-logos', 'public');
+            $team->logo_path = $path;
+        }
+
+        // Update team attributes
+        $team->name = $validated['name'];
+        $team->sport_type = $validated['sport_type'];
+        $team->size = $validated['size'];
+        $team->description = $validated['description'] ?? null;
+        $team->home_venue = $validated['home_venue'] ?? null;
+        $team->founded_date = $validated['founded_date'] ?? null;
+        $team->motto = $validated['motto'] ?? null;
+        $team->twitter_handle = $validated['twitter_handle'] ?? null;
+        $team->instagram_handle = $validated['instagram_handle'] ?? null;
+        $team->facebook_page = $validated['facebook_page'] ?? null;
+
+        // Save the team
+        $team->save();
+
+        return redirect()->route('teams.show', $team)
+            ->with('success', 'Team updated successfully!');
+    }
+
+    /**
+     * Remove the specified team from storage.
+     */
+    public function destroy(Team $team)
+    {
+        // Authorization: only team captain can delete
+        if (Auth::id() !== $team->captain_id) {
+            return redirect()->route('teams.show', $team)
+                ->with('error', 'Only the team captain can delete this team.');
+        }
+
+        // Start a transaction
+        DB::beginTransaction();
+
+        try {
+            // Remove team association from all players
+            Player::where('team_id', $team->id)->update(['team_id' => null]);
+
+            // Delete team logo if exists
+            if ($team->logo_path) {
+                Storage::disk('public')->delete($team->logo_path);
+            }
+
+            // Delete the team
+            $team->delete();
+
+            // Commit the transaction
+            DB::commit();
+
+            return redirect()->route('dashboard')
+                ->with('success', 'Team deleted successfully!');
+        } catch (\Exception $e) {
+            // Something went wrong, rollback
+            DB::rollBack();
+            
+            return back()->withErrors(['error' => 'Failed to delete team: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Add a player to the team.
+     */
+    public function addPlayer(Request $request, Team $team)
+    {
+        // Authorization: only team captain can add players
+        if (Auth::id() !== $team->captain_id) {
+            return redirect()->route('teams.show', $team)
+                ->with('error', 'You do not have permission to add players to this team.');
+        }
+
+        // Validate the request
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+        ]);
+
+        // Get the user
+        $user = User::findOrFail($validated['user_id']);
+        
+        // Find or create player profile
+        $player = Player::find($user->id);
+
+        // If no player profile exists, create one
+        if (!$player) {
+            $player = new Player();
+            $player->id = $user->id;
+            $player->sport = $team->sport_type;
+        } elseif ($player->team_id) {
+            // Check if the player is already in a team
+            return redirect()->route('teams.show', $team)
+                ->with('error', 'This player is already a member of a team.');
+        }
+
+        // Add the player to the team
+        $player->team_id = $team->id;
+        $player->save();
+
+        return redirect()->route('teams.show', $team)
+            ->with('success', 'Player added to the team successfully!');
+    }
+
+    /**
+     * Remove a player from the team.
+     */
+    public function removePlayer(Request $request, Team $team)
+    {
+        // Authorization: only team captain can remove players
+        if (Auth::id() !== $team->captain_id) {
+            return redirect()->route('teams.show', $team)
+                ->with('error', 'You do not have permission to remove players from this team.');
+        }
+
+        // Validate the request
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+        ]);
+
+        // Prevent removing the team captain
+        if ($validated['user_id'] == $team->captain_id) {
+            return redirect()->route('teams.show', $team)
+                ->with('error', 'You cannot remove the team captain.');
+        }
+
+        // Get the player
+        $player = Player::find($validated['user_id']);
+
+        // Check if the player exists and is actually in this team
+        if (!$player || $player->team_id != $team->id) {
+            return redirect()->route('teams.show', $team)
+                ->with('error', 'This player is not a member of this team.');
+        }
+
+        // Remove the player from the team
+        $player->team_id = null;
+        $player->save();
+
+        return redirect()->route('teams.show', $team)
+            ->with('success', 'Player removed from the team successfully!');
+    }
 }

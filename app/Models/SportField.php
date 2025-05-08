@@ -15,6 +15,7 @@ class SportField extends Model
  
     public function defaultSchedule()
     {
+       
         return $this->belongsTo(DefaultSchedule::class, 'default_schedule_id');
     }
 

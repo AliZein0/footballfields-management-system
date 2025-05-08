@@ -21,6 +21,8 @@ class Booking extends Model
         'details',
         'player_id',
         'field_id',
+        'payment_code',
+        'status',
     ];
 
     /**
@@ -30,21 +32,42 @@ class Booking extends Model
      */
     protected $casts = [
         'date' => 'date',
+        'start_time' => 'datetime:H:i',
+        'end_time' => 'datetime:H:i',
     ];
-
-    /**
-     * Get the field that owns the booking.
-     */
-    public function sportfield()
-    {
-        return $this->belongsTo(SportField::class , 'field_id');
-    }
 
     /**
      * Get the player that owns the booking.
      */
     public function player()
     {
-        return $this->belongsTo(User::class, 'player_id');
+        return $this->belongsTo(Player::class);
+    }
+
+    /**
+     * Get the field that is booked.
+     */
+    public function sportfield()
+    {
+        return $this->belongsTo(SportField::class, 'field_id');
+    }
+
+    /**
+     * Get the payment associated with the booking.
+     */
+    public function payment()
+    {
+        return $this->hasOne(Payment::class);
+    }
+    
+    /**
+     * Calculate the duration of the booking in hours
+     */
+    public function getDurationAttribute()
+    {
+        $start = strtotime($this->start_time);
+        $end = strtotime($this->end_time);
+        
+        return ($end - $start) / 3600; // Convert seconds to hours
     }
 }

@@ -270,3 +270,58 @@ document.addEventListener('DOMContentLoaded', function() {
           }
       });
   });
+
+
+  // JavaScript for custom scroll controls
+document.addEventListener('DOMContentLoaded', function() {
+  const fieldList = document.querySelector('.field-recommendation-list');
+  const scrollUpBtn = document.getElementById('scrollUp');
+  const scrollDownBtn = document.getElementById('scrollDown');
+  
+  if (fieldList && scrollUpBtn && scrollDownBtn) {
+      // Initially check if scroll is needed
+      checkScrollability();
+      
+      // Scroll amount for each click (can be adjusted as needed)
+      const scrollAmount = 120; // Height of one card
+      
+      // Scroll up button click event
+      scrollUpBtn.addEventListener('click', function() {
+          fieldList.scrollBy({
+              top: -scrollAmount,
+              behavior: 'smooth'
+          });
+      });
+      
+      // Scroll down button click event
+      scrollDownBtn.addEventListener('click', function() {
+          fieldList.scrollBy({
+              top: scrollAmount,
+              behavior: 'smooth'
+          });
+      });
+      
+      // Check if scrolling is possible and update button visibility
+      function checkScrollability() {
+          // Hide up button if already at the top
+          if (fieldList.scrollTop <= 0) {
+              scrollUpBtn.classList.add('disabled');
+          } else {
+              scrollUpBtn.classList.remove('disabled');
+          }
+          
+          // Hide down button if already at the bottom
+          if (fieldList.scrollHeight <= fieldList.clientHeight + fieldList.scrollTop) {
+              scrollDownBtn.classList.add('disabled');
+          } else {
+              scrollDownBtn.classList.remove('disabled');
+          }
+      }
+      
+      // Update button states when scrolling
+      fieldList.addEventListener('scroll', checkScrollability);
+      
+      // Update on window resize
+      window.addEventListener('resize', checkScrollability);
+  }
+});

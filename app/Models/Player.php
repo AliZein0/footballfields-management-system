@@ -27,6 +27,7 @@ class Player extends Model
      * The attributes that are mass assignable.
      */
     protected $fillable = [
+        'id',
         'team_id',
         'preferred_sports',
         'location',
@@ -38,8 +39,7 @@ class Player extends Model
      * The attributes that should be cast.
      */
     protected $casts = [
-        'preferred_sports' => 'array',
-        'member_since' => 'date',
+    'member_since' => 'date',
     ];
 
     /**

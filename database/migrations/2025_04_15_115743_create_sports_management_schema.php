@@ -48,24 +48,31 @@ return new class extends Migration
         });
         
 
-        // 6. Teams Table
-        Schema::create('teams', function (Blueprint $table) {
+         Schema::create('teams', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('captain_id')->constrained('users');
+            $table->foreignId('captain_id')->constrained('users')->onDelete('cascade');
             $table->string('name');
-            $table->integer('size');
-            $table->date('founded_date');
-            $table->string('logo_image_path')->nullable();
-            $table->string('social_media_links')->nullable();
+            $table->string('sport_type');
             $table->text('description')->nullable();
+            $table->integer('size')->default(5);
+            $table->string('home_venue')->nullable();
+            $table->date('founded_date')->nullable();
+            $table->string('motto')->nullable();
+            $table->string('logo_path')->nullable();
+            $table->string('twitter_handle')->nullable();
+            $table->string('instagram_handle')->nullable();
+            $table->string('facebook_page')->nullable();
             $table->timestamps();
         });
 
         // 7. Players Table
         Schema::create('players', function (Blueprint $table) {
             $table->foreignId('id')->primary()->constrained('users')->onDelete('cascade');
-            $table->foreignId('team_id')->constrained('teams');
-            $table->enum('sport', ['football', 'basketball', 'tennis', 'volleyball']);
+            $table->foreignId('team_id')->nullable()->constrained('teams')->nullOnDelete();
+            $table->json('preferred_sports')->nullable(); // Store multiple sports preferences as JSON
+            $table->string('location')->nullable();
+            $table->string('phone_number')->nullable();
+            $table->date('member_since')->nullable();
             $table->timestamps();
         });
 
@@ -94,12 +101,12 @@ return new class extends Migration
         // 9. Bookings Table
         Schema::create('bookings', function (Blueprint $table) {
             $table->id();
-            $table->date('date');
-            $table->time('start_time');
-            $table->time('end_time');
-            $table->text('details')->nullable();
-            $table->foreignId('player_id')->constrained('players');
-            $table->foreignId('field_id')->constrained('sport_fields');
+            $table->foreignId('player_id')->constrained('players')->onDelete('cascade');
+            $table->foreignId('sport_field_id')->constrained('sport_fields')->onDelete('cascade');
+            $table->string('payment_code');
+            $table->dateTime('start_time');
+            $table->dateTime('end_time');
+            $table->enum('status', ['upcoming', 'completed', 'cancelled'])->default('upcoming');
             $table->timestamps();
         });
 

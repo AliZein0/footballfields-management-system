@@ -230,6 +230,24 @@
                                 </div>
                             </div>
                             
+                            <!-- Role Selection Field -->
+                            <div class="col-md-12 mb-4">
+                                <div class="form-floating position-relative">
+                                    <select id="role_id" class="form-select @error('role_id') is-invalid @enderror" name="role_id" required>
+                                        <option value="2" {{ old('role_id') == 2 ? 'selected' : '' }}>Player</option>
+                                        <option value="3" {{ old('role_id') == 3 ? 'selected' : '' }}>Field Manager</option>
+                                        <option value="4" {{ old('role_id') == 4 ? 'selected' : '' }}>Vendor</option>
+                                    </select>
+                                    <label for="role_id" class="required-field">Account Type</label>
+                                    <i class="fas fa-user-tag input-icon"></i>
+                                    @error('role_id')
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{ $message }}</strong>
+                                        </span>
+                                    @enderror
+                                </div>
+                            </div>
+                            
                             <div class="section-title mt-4">Security Information</div>
                             
                             <div class="row">
@@ -255,9 +273,6 @@
                                     </div>
                                 </div>
                             </div>
-                            
-                            <!-- Hidden role_id field, default to a standard user role -->
-                            <input type="hidden" name="role_id" value="2">
                             
                             <div class="row mb-4">
                                 <div class="col-12">
