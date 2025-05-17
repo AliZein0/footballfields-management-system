@@ -1,0 +1,692 @@
+
+       
+        body {
+            font-family: 'Poppins', sans-serif;
+            color: #333;
+            background-color: #f8f9fa;
+            padding-top: 70px; /* Match the header height */
+        }
+        /* Add this to your index page CSS */
+        
+        .main {
+        position: relative;
+        z-index: 1; /* Ensure main content is below header z-index (997) */
+        }
+        
+        a {
+            color: #0066cc;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        a:hover {
+            color: #0052a3;
+        }
+        
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 1.5rem;
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+        
+        .section-title:after {
+            content: '';
+            position: absolute;
+            display: block;
+            width: 50px;
+            height: 3px;
+            background: #0066cc;
+            bottom: 0;
+            left: 0;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .view-all-link {
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .view-all-link i {
+            margin-left: 0.25rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .view-all-link:hover i {
+            transform: translateX(3px);
+        }
+        
+        /* Search Section Styles */
+        .search-section {
+            padding: 2.5rem 0;
+            background-color: #fff;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+        }
+        
+        .search-card {
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .search-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        
+        .search-subtitle {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+        
+        .search-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            /* margin-bottom: 1rem; */
+        }
+        
+        .search-input-group {
+            flex: 1;
+            min-width: 200px;
+            position: relative;
+        }
+        
+        .search-button-container {
+            display: flex;
+            align-items: center;
+        }
+        
+        .form-select,
+        .form-control {
+            height: 50px;
+            padding-left: 40px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+        }
+        
+        .search-button {
+            height: 50px;
+            min-width: 140px;
+            border-radius: 8px;
+            background-color: #0066cc;
+            border: none;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(0, 102, 204, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .search-button:hover {
+            background-color: #0052a3;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 102, 204, 0.25);
+        }
+        
+        .advanced-toggle {
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+        
+        .advanced-toggle a {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .advanced-toggle i {
+            font-size: 0.8rem;
+            margin-left: 0.25rem;
+        }
+        
+        .advanced-options {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        /* Venue Card Styles */
+        .venue-cards-container {
+            margin-top: 1.5rem;
+        }
+        
+        .venue-card {
+            background-color: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        
+        .venue-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .venue-image {
+            position: relative;
+            height: 180px;
+            overflow: hidden;
+        }
+        
+        .venue-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        
+        .venue-card:hover .venue-image img {
+            transform: scale(1.05);
+        }
+        
+        .venue-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(0, 102, 204, 0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .top-rated-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(40, 167, 69, 0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+        
+        .top-rated-badge i {
+            margin-right: 5px;
+        }
+        
+        .venue-details {
+            padding: 1.25rem;
+        }
+        
+        .venue-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .venue-location {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .venue-location i {
+            margin-right: 5px;
+            color: #999;
+        }
+        
+        .venue-rating {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .venue-rating i {
+            margin-right: 5px;
+            color: #ffcb00;
+        }
+        
+        .venue-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 1rem;
+        }
+        
+        .feature {
+            font-size: 0.8rem;
+            color: #666;
+            background-color: #f5f5f5;
+            padding: 3px 10px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .feature i {
+            margin-right: 5px;
+        }
+        
+        .venue-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #eee;
+            padding-top: 1rem;
+        }
+        
+        .venue-price {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #0066cc;
+        }
+        
+        .btn-book {
+            background-color: #0066cc;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-book:hover {
+            background-color: #0052a3;
+            color: white;
+        }
+        
+        /* Venue List Item Styles */
+        .venue-list {
+            margin-top: 1.5rem;
+        }
+        
+        .venue-list-item {
+            margin-bottom: 1rem;
+        }
+        
+        .venue-list-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .venue-link {
+            display: block;
+            color: inherit;
+            text-decoration: none;
+        }
+        
+        .venue-link:hover {
+            color: inherit;
+            text-decoration: none;
+        }
+        
+        .venue-horizontal-card {
+            display: flex;
+            background-color: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .venue-horizontal-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .venue-horizontal-card .venue-image {
+            width: 120px;
+            height: 120px;
+            flex-shrink: 0;
+        }
+        
+        .venue-horizontal-card .venue-content {
+            flex: 1;
+            padding: 1rem;
+            min-width: 0; /* Prevent flex child from overflowing */
+        }
+        
+        .venue-horizontal-card .venue-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .venue-horizontal-card .venue-details {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        
+        .venue-horizontal-card .venue-features {
+            margin-bottom: 0;
+        }
+        
+        .venue-horizontal-card .venue-actions {
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-left: 1px solid #eee;
+            min-width: 120px;
+        }
+        
+        .venue-horizontal-card .venue-price {
+            margin-bottom: 0.5rem;
+        }
+        
+        /* How It Works Section - FIXED STYLES */
+        .how-it-works {
+            padding: 3rem 0;
+            background-color: #f0f5ff;
+        }
+        
+        .steps-container {
+            margin-top: 2rem;
+        }
+        
+        .step-flow {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: stretch;
+        }
+        
+        .step {
+            flex: 1;
+            min-width: 200px;
+            max-width: 250px;
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            position: relative;
+            margin: 0 0.5rem 1.5rem;
+        }
+        
+        .step-number {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 30px;
+            background-color: #0066cc;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            z-index: 1;
+        }
+        
+        .step-connector {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0066cc;
+            font-size: 1.5rem;
+            padding: 0 0.5rem;
+        }
+        
+        .step-icon {
+            width: 70px;
+            height: 70px;
+            background-color: #e6f0ff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: #0066cc;
+            margin: 0 auto 1.5rem;
+        }
+        
+        .step h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .step p {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        /* Contact Section Styles */
+        .contact-section {
+            padding: 3rem 0;
+            background-color: #fff;
+        }
+        
+        .contact-info {
+            background-color: #0066cc;
+            color: white;
+            border-radius: 10px;
+            padding: 2rem;
+            height: 100%;
+        }
+        
+        .contact-info h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .contact-info p {
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        
+        .contact-item {
+            display: flex;
+            margin-bottom: 1.5rem;
+        }
+        
+        .contact-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .contact-item i {
+            font-size: 1.5rem;
+            margin-right: 1rem;
+        }
+        
+        .contact-text h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .contact-text a {
+            color: white;
+            opacity: 0.9;
+        }
+        
+        .contact-text a:hover {
+            opacity: 1;
+            text-decoration: underline;
+        }
+        
+        .contact-form {
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .contact-form label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        .contact-form .form-control {
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            height: auto;
+        }
+        
+        .contact-form textarea.form-control {
+            min-height: 120px;
+        }
+        
+        .contact-form button {
+            padding: 12px 25px;
+            font-weight: 600;
+            margin-top: 1rem;
+            background-color: #0066cc;
+            border: none;
+        }
+        
+        .contact-form button:hover {
+            background-color: #0052a3;
+        }
+        
+        /* Back to Top Button */
+        .back-to-top {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            width: 40px;
+            height: 40px;
+            background-color: #0066cc;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 99;
+        }
+        
+        .back-to-top.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .back-to-top:hover {
+            background-color: #0052a3;
+            transform: translateY(-3px);
+        }
+        
+        /* Media Queries */
+        @media (max-width: 992px) {
+            .step-connector {
+                display: none;
+            }
+            
+            
+            .steps-container {
+                padding: 0 1rem;
+            }
+            
+            .step-flow {
+                justify-content: center;
+            }
+            
+            .step {
+                margin-bottom: 2rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .search-section,
+            .top-rated-venues,
+            .recently-added,
+            .how-it-works,
+            .contact-section {
+                padding: 2rem 0;
+            }
+            
+            .search-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .search-button-container {
+                width: 100%;
+            }
+            
+            .search-button {
+                width: 100%;
+            }
+            
+            .venue-horizontal-card {
+                flex-direction: column;
+            }
+            
+            .venue-horizontal-card .venue-image {
+                width: 100%;
+                height: 150px;
+            }
+            
+            .venue-horizontal-card .venue-actions {
+                border-left: none;
+                border-top: 1px solid #eee;
+                flex-direction: row;
+                justify-content: space-between;
+                width: 100%;
+            }
+            
+            .venue-horizontal-card .venue-price {
+                margin-bottom: 0;
+            }
+            
+            .contact-info {
+                margin-bottom: 2rem;
+            }
+        }
+    
+        @media (max-width: 576px) {
+            .step {
+                min-width: 100%;
+            }
+            
+            .venue-horizontal-card .venue-details {
+                flex-direction: column;
+            }
+            
+            .venue-horizontal-card .venue-type {
+                margin-top: 0.5rem;
+            }
+        }
+
+    
+      

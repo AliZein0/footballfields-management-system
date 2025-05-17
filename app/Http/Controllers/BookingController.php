@@ -623,6 +623,45 @@ public function showBooking($bookingId)
             return redirect()->back()->with('error', 'An error occurred while cancelling your booking. Please try again or contact support.');
         }
     }
+    
+    /**
+     * Get the last visited fields for a player.
+     *
+     * @param  int  $playerId
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public static function getLastVisitedFields($playerId)
+    {
+        // Get the player's booking history, excluding cancelled bookings
+        $bookings = Booking::where('player_id', $playerId)
+                    ->where('status', '!=', 'cancelled')
+                    ->orderBy('date', 'desc')
+                    ->orderBy('start_time', 'desc')
+                    ->get();
+                    
+        if ($bookings->isEmpty()) {
+            return collect([]);
+        }
+        
+        // Extract field IDs from bookings (without duplicates)
+        $fieldIds = $bookings->pluck('field_id')->unique();
+        
+        // Get the fields the player has visited, preserving the order of most recently visited
+        $lastVisitedFields = collect();
+        foreach ($fieldIds as $fieldId) {
+            $field = SportField::find($fieldId);
+            if ($field) {
+                $lastVisitedFields->push($field);
+            }
+            
+            // Limit to 4 fields as that's what we display on the homepage
+            if ($lastVisitedFields->count() >= 4) {
+                break;
+            }
+        }
+        
+        return $lastVisitedFields;
+    }
 
 
 }

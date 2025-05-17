@@ -35,9 +35,17 @@ class LoginController extends Controller
     protected function authenticated(Request $request, $user)
     {
         // Check if user has role_id of 2
-       
+        if($user->role_id == 2) {
+            // Redirect to the admin dashboard
             return redirect('/players');
                 
         
+    }else if($user->role_id == 1) {
+            // Redirect to the admin dashboard
+            return redirect()->route('admin.dashboard');
+        }else{
+            // Redirect to the user dashboard
+            return redirect('/home');
+        }
     }
 }

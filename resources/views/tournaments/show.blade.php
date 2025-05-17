@@ -75,13 +75,17 @@
                                         <span>Duration:</span>
                                         <strong>
                                             @php
-    $startDate = Carbon\Carbon::parse($tournament->start_date);
-    $endDate = Carbon\Carbon::parse($tournament->end_date);
-    
-    // Calculate the inclusive duration (including both start and end dates)
-    $duration = $startDate->diffInDays($endDate) + 1;
-@endphp
-{{ $duration }} {{ Str::plural('day', $duration) }}
+                                            $startDate = Carbon\Carbon::parse($tournament->start_date);
+                                            $endDate = Carbon\Carbon::parse($tournament->end_date);
+                                        
+                                            // Swap dates if end date is before start date
+                                            if ($endDate < $startDate) {
+                                                [$startDate, $endDate] = [$endDate, $startDate];
+                                            }
+                                            $duration = $startDate->diffInDays($endDate) + 1;
+                                        @endphp
+                                        {{ $duration }} {{ Str::plural('day', $duration) }}
+
                                         </strong>
                                     </div>
                                 </div>
@@ -293,6 +297,57 @@
                             </li>
                         </ul>
                     </div>
+                    
+<!-- Team Registration Status Card -->
+@php
+$userTeam = auth()->check() && auth()->user()->hasTeam() ? auth()->user()->team : null;
+$isTeamRegistered = $userTeam && $tournament->teams->contains($userTeam->id);
+$isCaptain = $userTeam && auth()->user()->id === $userTeam->captain_id;
+$canCancel = $isTeamRegistered && $isCaptain && Carbon\Carbon::now()->lt($tournament->start_date);
+@endphp
+
+@if(auth()->check() && $userTeam && $isTeamRegistered)
+
+    
+</div>
+@php
+    $userTeam = auth()->check() && auth()->user()->hasTeam() ? auth()->user()->team : null;
+    $isTeamRegistered = $userTeam && $tournament->teams->contains($userTeam->id);
+    $isCaptain = $userTeam && auth()->user()->id === $userTeam->captain_id;
+    $canCancel = $isTeamRegistered && $isCaptain && Carbon\Carbon::now()->lt($tournament->start_date);
+@endphp
+
+@if($isTeamRegistered)
+<div class="card mb-4">
+    <div class="card-header bg-light">
+        <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i> Team Registration</h5>
+    </div>
+    <div class="card-body">
+        <p>Your team <strong>{{ $userTeam->name }}</strong> is registered for this tournament.</p>
+        
+        @if($canCancel)
+            <form action="{{ route('tournaments.cancel', $tournament->id) }}" method="POST">
+                @csrf
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to cancel your registration?')">
+                        <i class="fas fa-times me-1"></i> Cancel Registration
+                    </button>
+                </div>
+            </form>
+        @elseif(!$isCaptain)
+            <div class="alert alert-warning mb-0">
+                Only the team captain can cancel registration.
+            </div>
+        @elseif(!Carbon\Carbon::now()->lt($tournament->start_date))
+            <div class="alert alert-warning mb-0">
+                Cannot cancel after tournament has started.
+            </div>
+        @endif
+    </div>
+</div>
+@endif
+</div>
+@endif
                 </div>
                 
                 <!-- Organizer Info Card -->

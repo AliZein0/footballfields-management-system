@@ -1,51 +1,36 @@
 <?php
-// app/Models/Player.php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Casts\Attribute;
-
+use App\Models\TeamInvitation;
 class Player extends Model
 {
     use HasFactory;
 
-    /**
-     * The primary key for the model.
-     */
+    // Define primary key if not using auto-incrementing 'id'
     protected $primaryKey = 'id';
-
-    /**
-     * Indicates if the model's ID is auto-incrementing.
-     */
     public $incrementing = false;
 
-    /**
-     * The attributes that are mass assignable.
-     */
     protected $fillable = [
-        'id',
+        'id', // Make sure this is fillable if you're manually setting it
+        'user_id',
         'team_id',
-        'preferred_sports',
-        'location',
-        'phone_number',
+        'sport',
+        'bio',
         'member_since',
+        'location'
     ];
 
-    /**
-     * The attributes that should be cast.
-     */
     protected $casts = [
-    'member_since' => 'date',
+        'member_since' => 'datetime',
     ];
 
     /**
-     * Get the user that the player profile belongs to.
+     * Get the user that owns the player profile.
      */
-    public function user(): BelongsTo
+    public function user()
     {
         return $this->belongsTo(User::class, 'id');
     }
@@ -53,47 +38,63 @@ class Player extends Model
     /**
      * Get the team that the player belongs to.
      */
-    public function team(): BelongsTo
+    public function team()
     {
         return $this->belongsTo(Team::class);
     }
 
     /**
-     * Get the bookings for the player.
-     */
-    public function bookings(): HasMany
-    {
-        return $this->hasMany(Booking::class);
-    }
-
-    public function favoriteVenues(): BelongsToMany
-{
-    return $this->belongsToMany(SportField::class, 'player_favorite_venues');
-}
-
-    /**
      * Get the favorite venues for the player.
      */
-    
-
-
-    public function upcomingBookings()
+    public function favoriteVenues()
     {
-        return $this->bookings()->where('status', 'upcoming');
-            // ->where('start_time', '>', now())
-            // ->orderBy('start_time');
+        return $this->belongsToMany(SportField::class, 'player_favorite_venues')
+                    ->withPivot('last_visited')
+                    ->withTimestamps();
     }
-    
+
     /**
-     * Get the player's member since formatted.
+     * Get all pending team invitations for the player.
      */
-    protected function memberSinceFormatted(): Attribute
+    public function pendingTeamInvitations()
     {
-        return Attribute::make(
-            get: fn () => $this->member_since ? $this->member_since->format('F Y') : null,
-        );
+        return $this->hasMany(TeamInvitation::class, 'player_id')->where('status', 'pending');
     }
+
+    /**
+     * Get all team invitations for the player.
+     */
+    public function teamInvitations()
+    {
+        return $this->hasMany(TeamInvitation::class, 'player_id');
+    }
+
+    /**
+     * Check if the player has any pending team invitations.
+     *
+     * @return bool
+     */
+    public function hasPendingTeamInvitations()
+    {
+        return $this->pendingTeamInvitations()->exists();
+    }
+
+    /**
+     * Check if the player has a pending invitation from a specific team.
+     *
+     * @param int $teamId
+     * @return bool
+     */
+    public function hasPendingInvitationFrom($teamId)
+    {
+        return $this->pendingTeamInvitations()->where('team_id', $teamId)->exists();
+    }
+
+    /**
+ * Get all the reviews written by the player.
+ */
+public function reviews()
+{
+    return $this->hasMany(Review::class);
 }
-
-
-
+}

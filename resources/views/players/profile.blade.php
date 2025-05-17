@@ -44,13 +44,7 @@
                                 <a href="#profile-tab" class="nav-link active text-start mb-2 d-flex align-items-center" data-tab="profile">
                                     <i class="fas fa-user me-3"></i> <span>Profile</span>
                                 </a>
-                                
-                                <a href="#venues-tab" class="nav-link text-start mb-2 d-flex align-items-center" data-tab="venues">
-                                    <i class="fas fa-map-marker-alt me-3"></i> <span>Favorite Venues</span>
-                                </a>
-                                <a href="#stats-tab" class="nav-link text-start mb-2 d-flex align-items-center" data-tab="stats">
-                                    <i class="fas fa-chart-line me-3"></i> <span>My Statistics</span>
-                                </a>
+                             
                             </div>
                         </div>
                     </div>
@@ -203,183 +197,6 @@
                                 </form>
                             </div>
                         </div>
-
-                       
-
-                        <!-- Venues Tab -->
-                        <div id="venues-tab" class="tab-content">
-                            <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
-                                <h3 class="card-title h4 mb-0 fw-bold">Favorite Venues</h3>
-                                <a href="" class="btn btn-primary btn-sm">
-                                    <i class="fas fa-search me-2"></i>Find New Venues
-                                </a>
-                            </div>
-                            
-                            <div class="row g-3">
-                                @forelse($player->favoriteVenues as $venue)
-                                    <div class="col-md-6 col-lg-4">
-                                        <div class="card h-100 border-0 shadow-sm rounded-3 overflow-hidden">
-                                            <div class="position-relative">
-                                                <img src="{{ $venue->image_path ?? '/api/placeholder/400/200' }}" class="card-img-top" alt="{{ $venue->name }}">
-                                                <span class="position-absolute top-0 end-0 bg-white m-2 p-2 rounded-circle">
-                                                    <i class="fas fa-star text-warning"></i>
-                                                </span>
-                                            </div>
-                                            <div class="card-body">
-                                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                                    <h5 class="card-title mb-0">{{ $venue->name }}</h5>
-                                                </div>
-                                                <p class="card-text text-muted small mb-3">
-                                                    <i class="fas fa-map-marker-alt me-1"></i>{{ $venue->address }}
-                                                </p>
-                                                <div class="d-flex justify-content-between align-items-center">
-                                                    <p class="text-muted small mb-0">
-                                                        Last visited: {{ $venue->pivot->last_visited ? \Carbon\Carbon::parse($venue->pivot->last_visited)->diffForHumans() : 'Never' }}
-                                                    </p>
-                                                    <a href="" class="btn btn-primary btn-sm">Book Now</a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                @empty
-                                    <div class="col-12 text-center py-4 text-muted">
-                                        <i class="fas fa-map-marked-alt fs-2 mb-3"></i>
-                                        <p>You don't have any favorite venues yet.</p>
-                                        <a href="" class="btn btn-primary btn-sm">
-                                            Discover Venues
-                                        </a>
-                                    </div>
-                                @endforelse
-                            </div>
-                        </div> 
-
-                        <!-- Stats Tab -->
-                        <div id="stats-tab" class="tab-content">
-                            <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
-                                <h3 class="card-title h4 mb-0 fw-bold">My Statistics</h3>
-                                <div class="btn-group btn-group-sm">
-                                    <button class="btn btn-outline-primary active" data-period="all">All Time</button>
-                                    <button class="btn btn-outline-primary" data-period="month">This Month</button>
-                                    <button class="btn btn-outline-primary" data-period="week">This Week</button>
-                                </div>
-                            </div>
-                            
-                            <div class="row g-4 mb-4">
-                                <div class="col-md-3">
-                                    <div class="card bg-primary bg-opacity-10 border-0 rounded-3 h-100">
-                                        <div class="card-body text-center p-4">
-                                            <i class="fas fa-calendar-check text-primary fs-3 mb-3"></i>
-                                            <h2 class="display-6 fw-bold mb-1">24</h2>
-                                            <p class="text-muted mb-0">Total Bookings</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="col-md-3">
-                                    <div class="card bg-primary bg-opacity-10 border-0 rounded-3 h-100">
-                                        <div class="card-body text-center p-4">
-                                            <i class="fas fa-calendar-alt text-primary fs-3 mb-3"></i>
-                                            <h2 class="display-6 fw-bold mb-1">5</h2>
-                                            <p class="text-muted mb-0">Bookings This Month</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="col-md-3">
-                                    <div class="card bg-info bg-opacity-10 border-0 rounded-3 h-100">
-                                        <div class="card-body text-center p-4">
-                                            <i class="fas fa-building text-info fs-3 mb-3"></i>
-                                            <h2 class="display-6 fw-bold mb-1">8</h2>
-                                            <p class="text-muted mb-0">Favorite Venues</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="col-md-3">
-                                    <div class="card bg-info bg-opacity-10 border-0 rounded-3 h-100">
-                                        <div class="card-body text-center p-4">
-                                            <i class="fas fa-stopwatch text-info fs-3 mb-3"></i>
-                                            <h2 class="display-6 fw-bold mb-1">36</h2>
-                                            <p class="text-muted mb-0">Hours Played</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="row g-4">
-                                <div class="col-md-6">
-                                    <div class="card border-0 shadow-sm h-100 rounded-3">
-                                        <div class="card-header bg-white border-bottom-0 pt-3 pb-0">
-                                            <h5 class="card-title mb-0">Sport Preferences</h5>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="chart-container" style="height: 250px;">
-                                                <canvas id="sportPreferencesChart"></canvas>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="col-md-6">
-                                    <div class="card border-0 shadow-sm h-100 rounded-3">
-                                        <div class="card-header bg-white border-bottom-0 pt-3 pb-0">
-                                            <h5 class="card-title mb-0">Booking Trends</h5>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="chart-container" style="height: 250px;">
-                                                <canvas id="bookingTrendsChart"></canvas>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="col-md-12">
-                                    <div class="card border-0 shadow-sm rounded-3">
-                                        <div class="card-header bg-white border-bottom-0 pt-3 pb-0">
-                                            <h5 class="card-title mb-0">Recent Activity</h5>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="table-responsive">
-                                                <table class="table table-hover">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Date</th>
-                                                            <th>Venue</th>
-                                                            <th>Sport</th>
-                                                            <th>Duration</th>
-                                                            <th>Status</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <tr>
-                                                            <td>May 1, 2025</td>
-                                                            <td>Stadium Field #3</td>
-                                                            <td>Football</td>
-                                                            <td>5:00 PM - 7:00 PM</td>
-                                                            <td><span class="badge bg-success">Completed</span></td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>Apr 28, 2025</td>
-                                                            <td>Central Court</td>
-                                                            <td>Tennis</td>
-                                                            <td>3:00 PM - 5:00 PM</td>
-                                                            <td><span class="badge bg-success">Completed</span></td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>Apr 25, 2025</td>
-                                                            <td>Sports Complex</td>
-                                                            <td>Basketball</td>
-                                                            <td>7:00 PM - 9:00 PM</td>
-                                                            <td><span class="badge bg-success">Completed</span></td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -506,6 +323,10 @@
     .profile-nav .nav-link.active:after {
         display: none !important;
     }
+    .profile-nav .nav .nav-link:after {
+        display: none !important;
+    }
+    
     
     .profile-nav .nav-link i {
         width: 20px;
@@ -551,7 +372,6 @@
     }
     </style>
     
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Tab switching functionality
@@ -718,113 +538,6 @@
                         }, 3000);
                     }, 1000);
                 });
-            }
-            
-            // Initialize sample charts
-            const sportPrefCtx = document.getElementById('sportPreferencesChart').getContext('2d');
-            const sportPreferencesChart = new Chart(sportPrefCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Football', 'Basketball', 'Tennis', 'Volleyball'],
-                    datasets: [{
-                        data: [35, 25, 20, 20],
-                        backgroundColor: [
-                            '#0066cc',
-                            '#ff4757',
-                            '#ffc107',
-                            '#28a745'
-                        ],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
-                    }
-                }
-            });
-            
-            const bookingTrendsCtx = document.getElementById('bookingTrendsChart').getContext('2d');
-            const bookingTrendsChart = new Chart(bookingTrendsCtx, {
-                type: 'line',
-                data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                    datasets: [{
-                        label: 'Number of Bookings',
-                        data: [5, 8, 12, 10, 15, 20],
-                        borderColor: '#0066cc',
-                        backgroundColor: 'rgba(0, 102, 204, 0.1)',
-                        tension: 0.3,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                precision: 0
-                            }
-                        }
-                    }
-                }
-            });
-            
-            // Handle stats period buttons
-            const periodButtons = document.querySelectorAll('[data-period]');
-            periodButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    periodButtons.forEach(btn => btn.classList.remove('active'));
-                    this.classList.add('active');
-                    
-                    const period = this.getAttribute('data-period');
-                    
-                    // Here you would fetch and update stats based on the period
-                    // This is a placeholder for the AJAX call
-                    console.log(`Fetching stats for period: ${period}`);
-                    
-                    // Simulate data update for demo purposes
-                    if (period === 'week') {
-                        updateCharts({
-                            sports_labels: ['Football', 'Basketball', 'Tennis'],
-                            sports_data: [60, 30, 10],
-                            months_labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                            months_data: [2, 3, 1, 4, 2, 5, 3]
-                        });
-                    } else if (period === 'month') {
-                        updateCharts({
-                            sports_labels: ['Football', 'Basketball', 'Tennis', 'Volleyball'],
-                            sports_data: [45, 25, 20, 10],
-                            months_labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-                            months_data: [8, 12, 15, 10]
-                        });
-                    } else {
-                        updateCharts({
-                            sports_labels: ['Football', 'Basketball', 'Tennis', 'Volleyball'],
-                            sports_data: [35, 25, 20, 20],
-                            months_labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                            months_data: [5, 8, 12, 10, 15, 20]
-                        });
-                    }
-                });
-            });
-            
-            function updateCharts(data) {
-                // Update Sports Preferences Chart
-                sportPreferencesChart.data.labels = data.sports_labels;
-                sportPreferencesChart.data.datasets[0].data = data.sports_data;
-                sportPreferencesChart.update();
-                
-                // Update Booking Trends Chart
-                bookingTrendsChart.data.labels = data.months_labels;
-                bookingTrendsChart.data.datasets[0].data = data.months_data;
-                bookingTrendsChart.update();
             }
         });
     </script>

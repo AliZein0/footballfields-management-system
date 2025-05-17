@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\SportField;
 use App\Models\Player;
 use App\Models\Team;
+use App\Models\Booking;
 use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class PlayerController extends Controller
 {
@@ -17,11 +20,58 @@ class PlayerController extends Controller
      */
     public function index()
     {
+        $fields = SportField::all();
+        $lastVisitedFields = collect([]);
+        $hasBookings = false;
+        
+        // Check if user is logged in
+        if (session()->has('player_id')) {
+            $playerId = session('player_id');
+            
+            // Check if player has any bookings
+            $hasBookings = Booking::where('player_id', $playerId)
+                        ->where('status', '!=', 'cancelled')
+                        ->exists();
+            
+            if ($hasBookings) {
+                // Get the player's last visited fields
+                $lastVisitedFields = app(BookingController::class)->getLastVisitedFields($playerId);
+            }
+        }
+        
+        // Get pending invitations count safely
+        $invitationCount = 0;
+        $pendingInvitations = collect([]);
+        
+        try {
+            if (Auth::check() && class_exists('App\Models\TeamInvitation')) {
+                $player = Player::find(Auth::id());
+                if ($player) {
+                    // Only attempt this if the TeamInvitation model exists
+                    $pendingInvitations = DB::table('team_invitations')
+                        ->where('player_id', Auth::id())
+                        ->where('status', 'pending')
+                        ->get();
+                    
+                    $invitationCount = $pendingInvitations->count();
+                }
+            }
+        } catch (\Exception $e) {
+            // Silently handle any errors
+            $invitationCount = 0;
+            $pendingInvitations = collect([]);
+        }
+        
         return view('players.index', [
-            'fields' => SportField::all(),
+            'fields' => $fields,
+            'lastVisitedFields' => $lastVisitedFields,
+            'hasBookings' => $hasBookings,
+            'invitationCount' => $invitationCount,
+            'pendingInvitations' => $pendingInvitations
         ]);
     }
     
+    // Rest of the controller methods remain unchanged
     public function profile(Player $player)
     {
         return view('players.profile', [
@@ -100,93 +150,85 @@ class PlayerController extends Controller
     }
 
     public function browseAll($teamId)
-{
-    $team = Team::findOrFail($teamId);
-    
-    // Get all players who aren't already in this team
-    $availablePlayers = Player::where(function($query) use ($teamId) {
-            $query->whereNull('team_id')
-                ->orWhere('team_id', '!=', $teamId);
-        })
-        ->with('user')
-        ->paginate(10);
+    {
+        $team = Team::findOrFail($teamId);
         
-    return view('players.browse', compact('team', 'availablePlayers'));
-}
+        // Get all players who aren't already in this team
+        $availablePlayers = Player::where(function($query) use ($teamId) {
+                $query->whereNull('team_id')
+                    ->orWhere('team_id', '!=', $teamId);
+            })
+            ->with('user')
+            ->paginate(10);
+            
+        return view('players.browse', compact('team', 'availablePlayers'));
+    }
 
-/**
- * Add existing player to the team.
- */
-public function storeToTeam(Request $request, $teamId)
-{
-    $team = Team::findOrFail($teamId);
-    
-    // Validate player selection
-    $validated = $request->validate([
-        'player_id' => 'required|exists:players,id',
-    ]);
-    
-    // Get the player and assign to team
-    $player = Player::findOrFail($validated['player_id']);
-    $player->team_id = $team->id;
-    $player->save();
-    
-    return redirect()->route('teams.show', $team->id)
-        ->with('success', 'Player added to team successfully!');
-}
+    /**
+     * Add existing player to the team.
+     */
+    public function storeToTeam(Request $request, $teamId)
+    {
+        $team = Team::findOrFail($teamId);
+        
+        // Validate player selection
+        $validated = $request->validate([
+            'player_id' => 'required|exists:players,id',
+        ]);
+        
+        // Get the player and assign to team
+        $player = Player::findOrFail($validated['player_id']);
+        $player->team_id = $team->id;
+        $player->save();
+        
+        return redirect()->route('teams.show', $team->id)
+            ->with('success', 'Player added to team successfully!');
+    }
 
-public function show($teamId, $playerId)
-{
-    $team = Team::findOrFail($teamId);
-    $player = Player::with(['user', 'favoriteVenues'])->findOrFail($playerId);
-    
-    // Format member since date for display
-    $player->member_since_formatted = $player->member_since ? 
-        $player->member_since->format('F j, Y') : null;
-    
-    return view('players.show', compact('team', 'player'));
-}
+    public function show($teamId, $playerId)
+    {
+        $team = Team::findOrFail($teamId);
+        $player = Player::with(['user', 'favoriteVenues'])->findOrFail($playerId);
+        
+        // Format member since date for display
+        $player->member_since_formatted = $player->member_since ? 
+            $player->member_since->format('F j, Y') : null;
+        
+        return view('players.show', compact('team', 'player'));
+    }
 
-/**
- * Show the player details.
- */
+    /**
+     * Remove the player from the team (not deleting the player).
+     */
+    public function removeFromTeam($teamId, $playerId)
+    {
+        $team = Team::findOrFail($teamId);
+        $player = Player::where('id', $playerId)
+            ->where('team_id', $teamId)
+            ->firstOrFail();
+        
+        // Just remove from team, don't delete the player
+        $player->team_id = null;
+        $player->save();
+        
+        return redirect()->route('teams.show', $team->id)
+            ->with('success', 'Player removed from team successfully!');
+    }
 
-
-/**
- * Remove the player from the team (not deleting the player).
- */
-public function removeFromTeam($teamId, $playerId)
-{
-    $team = Team::findOrFail($teamId);
-    $player = Player::where('id', $playerId)
-        ->where('team_id', $teamId)
-        ->firstOrFail();
-    
-    // Just remove from team, don't delete the player
-    $player->team_id = null;
-    $player->save();
-    
-    return redirect()->route('teams.show', $team->id)
-        ->with('success', 'Player removed from team successfully!');
-}
-
-
-/**
- * Log the player out and redirect to login page.
- *
- * @return \Illuminate\Http\RedirectResponse
- */
-public function logout(Request $request)
-{
-    // Clear player session data
-    $request->session()->forget('player_id');
-    $request->session()->forget('player_name');
-    $request->session()->forget('player_email');
-    
-    // Flash using with() method on redirect
-    return redirect()->route('players.login')
-        ->with('success', 'You have been successfully logged out.');
-}
-
-
+    /**
+     * Log the player out and redirect to login page.
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function logout(Request $request)
+    {
+        // Clear player session data
+        $request->session()->forget('player_id');
+        $request->session()->forget('player_name');
+        $request->session()->forget('player_email');
+        
+        // Flash using with() method on redirect
+        return redirect()->route('login')
+            ->with('success', 'You have been successfully logged out.');
+    }
 }

@@ -43,58 +43,102 @@
                     <div class="dropdown">
                         <button class="dropdown-toggle" type="button" id="notificationsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-bell"></i>
-                            <span class="badge">3</span>
+                            @php
+                                $invitationCount = 0;
+                                // Check for team invitations safely (preventing errors if model not found)
+                                try {
+                                    if (Auth::check() && class_exists('App\Models\TeamInvitation')) {
+                                        $invitationCount = \App\Models\TeamInvitation::where('player_id', Auth::id())
+                                            ->where('status', 'pending')
+                                            ->count();
+                                    }
+                                } catch (\Exception $e) {
+                                    // Silently handle any errors
+                                    $invitationCount = 0;
+                                }
+                            @endphp
+                            @if($invitationCount > 0)
+                                <span class="badge">{{ $invitationCount }}</span>
+                            @endif
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationsDropdown">
                             <li class="dropdown-header">
                                 <h6>Notifications</h6>
-                                <span>You have 3 new notifications</span>
+                                @if($invitationCount > 0)
+                                    <span>You have {{ $invitationCount }} new invitation{{ $invitationCount > 1 ? 's' : '' }}</span>
+                                @else
+                                    <span>No new notifications</span>
+                                @endif
                             </li>
                             <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <a class="dropdown-item notification-item" href="#">
-                                    <div class="notification-icon bg-primary">
-                                        <i class="fas fa-calendar-check"></i>
+                            
+                            @if($invitationCount > 0)
+                                @php
+                                    $pendingInvitations = [];
+                                    try {
+                                        if (class_exists('App\Models\TeamInvitation')) {
+                                            $pendingInvitations = \App\Models\TeamInvitation::where('player_id', Auth::id())
+                                                ->where('status', 'pending')
+                                                ->with(['team', 'inviter'])
+                                                ->orderBy('created_at', 'desc')
+                                                ->take(3)
+                                                ->get();
+                                        }
+                                    } catch (\Exception $e) {
+                                        // Silently handle any errors
+                                    }
+                                @endphp
+                                
+                                @forelse($pendingInvitations as $invitation)
+                                    <li>
+                                        <a class="dropdown-item notification-item" href="{{ route('invitations.player') }}">
+                                            <div class="notification-icon bg-success">
+                                                <i class="fas fa-users"></i>
+                                            </div>
+                                            <div class="notification-content">
+                                                <h5>Team Invitation</h5>
+                                                <p>You've been invited to join {{ $invitation->team->name }}</p>
+                                                <span class="time">{{ $invitation->created_at->diffForHumans() }}</span>
+                                            </div>
+                                        </a>
+                                    </li>
+                                    @if(!$loop->last)
+                                        <li><hr class="dropdown-divider"></li>
+                                    @endif
+                                @empty
+                                    <li>
+                                        <a class="dropdown-item notification-item" href="#">
+                                            <div class="notification-icon bg-success">
+                                                <i class="fas fa-users"></i>
+                                            </div>
+                                            <div class="notification-content">
+                                                <h5>Team Invitation</h5>
+                                                <p>You have pending team invitations</p>
+                                                <span class="time">New</span>
+                                            </div>
+                                        </a>
+                                    </li>
+                                @endforelse
+                                
+                                @if($invitationCount > 3)
+                                    <li><hr class="dropdown-divider"></li>
+                                @endif
+                            @else
+                                <li>
+                                    <div class="dropdown-item text-center py-3">
+                                        <p class="text-muted mb-0">No new notifications</p>
                                     </div>
-                                    <div class="notification-content">
-                                        <h5>Booking Confirmed</h5>
-                                        <p>Your booking for Football Field #3 is confirmed</p>
-                                        <span class="time">30 min ago</span>
-                                    </div>
-                                </a>
-                            </li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <a class="dropdown-item notification-item" href="#">
-                                    <div class="notification-icon bg-success">
-                                        <i class="fas fa-users"></i>
-                                    </div>
-                                    <div class="notification-content">
-                                        <h5>Team Invitation</h5>
-                                        <p>You've been invited to join Eagles Team</p>
-                                        <span class="time">1 hour ago</span>
-                                    </div>
-                                </a>
-                            </li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <a class="dropdown-item notification-item" href="#">
-                                    <div class="notification-icon bg-warning">
-                                        <i class="fas fa-star"></i>
-                                    </div>
-                                    <div class="notification-content">
-                                        <h5>Rate Your Experience</h5>
-                                        <p>How was your game at Football Field #3?</p>
-                                        <span class="time">1 day ago</span>
-                                    </div>
-                                </a>
-                            </li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <a class="dropdown-item text-center view-all" href="#">
-                                    View All Notifications
-                                </a>
-                            </li>
+                                </li>
+                            @endif
+                            
+                            @if($invitationCount > 0)
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item text-center view-all" href="{{ route('invitations.player') }}">
+                                        View All Notifications
+                                    </a>
+                                </li>
+                            @endif
                         </ul>
                     </div>
                 </div>
@@ -112,15 +156,11 @@
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="">
+                                <a class="dropdown-item" href="{{ route('bookings.history') }}">
                                     <i class="fas fa-history me-2"></i> Booking History
                                 </a>
                             </li>
-                            <li>
-                                <a class="dropdown-item" href="">
-                                    <i class="fas fa-cog me-2"></i> Settings
-                                </a>
-                            </li>
+                           
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <a class="dropdown-item logout" href="{{ route('players.logout') }}">
@@ -157,6 +197,8 @@
         </div>
     </div>
 </header>
+
+{{ $slot ?? '' }}
 
 <style>
 /* Modern Header Styles */
@@ -573,9 +615,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Close mobile menu when clicking outside
     document.addEventListener('click', function(e) {
-        if (mainNav.classList.contains('active') && !e.target.closest('#main-nav') && !e.target.closest('#mobile-nav-toggle')) {
+        if (mainNav && mainNav.classList.contains('active') && !e.target.closest('#main-nav') && !e.target.closest('#mobile-nav-toggle')) {
             mainNav.classList.remove('active');
-            if (mobileNavToggle.querySelector('i').classList.contains('fa-times')) {
+            if (mobileNavToggle && mobileNavToggle.querySelector('i').classList.contains('fa-times')) {
                 mobileNavToggle.querySelector('i').classList.remove('fa-times');
                 mobileNavToggle.querySelector('i').classList.add('fa-bars');
             }
@@ -585,10 +627,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add shadow on scroll
     window.addEventListener('scroll', function() {
         const header = document.getElementById('header');
-        if (window.scrollY > 10) {
-            header.style.boxShadow = '0 2px 15px rgba(0, 0, 0, 0.1)';
-        } else {
-            header.style.boxShadow = 'none';
+        if (header) {
+            if (window.scrollY > 10) {
+                header.style.boxShadow = '0 2px 15px rgba(0, 0, 0, 0.1)';
+            } else {
+                header.style.boxShadow = 'none';
+            }
         }
     });
 });

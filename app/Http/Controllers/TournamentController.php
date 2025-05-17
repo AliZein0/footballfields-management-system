@@ -10,6 +10,7 @@ use App\Models\SportField;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
+
 class TournamentController extends Controller
 {
     // TournamentController.php
@@ -175,6 +176,49 @@ public function show(Tournament $tournament)
 
 
 
+
+/**
+ * Cancel team's registration from a tournament
+ */
+public function cancelRegistration(Request $request, Tournament $tournament)
+{
+    // Get the authenticated user's team
+    $user = Auth::user();
+   
+        
+        // Get the user's player profile
+        $player = DB::table('players')->where('id', $user->id)->first();
+    if (!$player->team_id) {
+        return redirect()->route('tournaments.show', $tournament)
+            ->with('error', 'You do not have a team to withdraw from this tournament.');
+    }
+    
+    $team = $user->team;
+    
+    // Check if user is the team captain
+    if ($user->id !== $team->captain_id) {
+        return redirect()->route('tournaments.show', $tournament)
+            ->with('error', 'Only the team captain can withdraw from tournaments.');
+    }
+    
+    // Check if the team is actually registered for this tournament
+    if (!$tournament->teams->contains($team->id)) {
+        return redirect()->route('tournaments.show', $tournament)
+            ->with('error', 'Your team is not registered for this tournament.');
+    }
+    
+    // Check if tournament has already started
+    if (Carbon::now()->gte($tournament->start_date)) {
+        return redirect()->route('tournaments.show', $tournament)
+            ->with('error', 'Cannot withdraw from a tournament that has already started.');
+    }
+    
+    // Remove the team from the tournament
+    $tournament->teams()->detach($team->id);
+    
+    return redirect()->route('tournaments.show', $tournament)
+        ->with('success', 'Your team has been withdrawn from the tournament successfully.');
+}
 
 
 

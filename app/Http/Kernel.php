@@ -60,6 +60,8 @@ class Kernel extends HttpKernel
         'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-        'no.team' => \App\Http\Middleware\NoTeamMiddleware::class, // Register our custom middleware
+        'no.team' => \App\Http\Middleware\NoTeamMiddleware::class,
+        'player.auth' => \App\Http\Middleware\AuthorizePlayerProfile::class,
+        'admin' => \App\Http\Middleware\AdminMiddleware::class,
     ];
 }

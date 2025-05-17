@@ -24,10 +24,31 @@ class TeamController extends Controller
     /**
      * Show the form for creating a new team.
      */
-    public function create()
+    public function create(Team $team = null)
     {
-        // This action is protected by the NoTeamMiddleware
+       $user = Auth::user();
+    $player = Player::find($user->id);
+    
+    // Case 1: User has no team - Show team creation view
+    if (!$player || !$player->team_id) {
         return view('teams.create');
+    }
+    
+    // If no team is specified but user has a team, get the user's team
+    if (!$team && $player->team_id) {
+        $team = Team::find($player->team_id);
+    }
+    
+    // Load team with related data
+    $team->load(['captain', 'players.user']);
+    
+    // Case 2: User is the team captain - Show team management view
+    if ($user->id === $team->captain_id) {
+        return view('teams.manage', compact('team'));
+    }
+    // Case 3: User is a regular team member - Show team details view
+     
+    return view('teams.member', compact('team' ));
     }
 
     /**
@@ -107,21 +128,32 @@ class TeamController extends Controller
         }
     }
 
-    /**
-     * Display the specified team.
-     */
-    public function show(Team $team)
-    {
-        // Load team with related data - captain and player profiles
-        $team->load(['captain']);
-        
-        // Get players for this team
-        $players = Player::where('team_id', $team->id)
-                        ->with('user')
-                        ->get();
-        
-        return view('teams.show', compact('team', 'players'));
+    public function show(Team $team = null)
+{
+    $user = Auth::user();
+    $player = Player::find($user->id);
+    
+    // Case 1: User has no team - Show team creation view
+    if (!$player || !$player->team_id) {
+        return view('teams.create');
     }
+    
+    // If no team is specified but user has a team, get the user's team
+    if (!$team && $player->team_id) {
+        $team = Team::find($player->team_id);
+    }
+    
+    // Load team with related data
+    $team->load(['captain', 'players.user']);
+    
+    // Case 2: User is the team captain - Show team management view
+    if ($user->id === $team->captain_id) {
+        return view('teams.manage', compact('team'));
+    }
+    
+    // Case 3: User is a regular team member - Show team details view
+    return view('teams.member', compact('team'));
+}
 
     /**
      * Show the form for editing the specified team.
@@ -310,5 +342,131 @@ class TeamController extends Controller
 
         return redirect()->route('teams.show', $team)
             ->with('success', 'Player removed from the team successfully!');
+    }
+
+
+
+    /**
+     * Show the list of available players to invite.
+     *
+     * @param int $teamId
+     * @return \Illuminate\View\View
+     */
+    public function browsePlayers($teamId)
+    {
+        $team = Team::findOrFail($teamId);
+        
+        // Authorization: only team captain can browse players
+        if (Auth::id() !== $team->captain_id) {
+            return redirect()->route('teams.show', $team)
+                ->with('error', 'Only the team captain can add players to the team.');
+        }
+        
+        // Get all players who aren't already in this team
+        $availablePlayers = Player::whereNull('team_id')
+            ->with(['user', 'pendingTeamInvitations' => function($query) use ($team) {
+                $query->where('team_id', $team->id);
+            }])
+            ->paginate(10);
+            
+        return view('teams.browse_players', compact('team', 'availablePlayers'));
+    }
+    
+    /**
+     * Show the team members.
+     *
+     * @param int $teamId
+     * @return \Illuminate\View\View
+     */
+    public function showPlayers($teamId)
+    {
+        $team = Team::with(['players.user'])->findOrFail($teamId);
+        
+        return view('teams.players', compact('team'));
+    }
+    
+    /**
+     * Show a specific player in a team.
+     *
+     * @param int $teamId
+     * @param int $playerId
+     * @return \Illuminate\View\View
+     */
+    public function showPlayer($teamId, $playerId)
+    {
+        $team = Team::findOrFail($teamId);
+        $player = Player::with('user')->where('id', $playerId)->where('team_id', $teamId)->firstOrFail();
+        
+        return view('teams.player_detail', compact('team', 'player'));
+    }
+    
+    /**
+     * Leave the team (for players who are not captains).
+     *
+     * @param int $teamId
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function leaveTeam($teamId)
+    {
+        $team = Team::findOrFail($teamId);
+        $player = Player::where('id', Auth::id())->firstOrFail();
+        
+        // Check if player is in this team
+        if ($player->team_id != $teamId) {
+            return redirect()->route('dashboard')
+                ->with('error', 'You are not a member of this team.');
+        }
+        
+        // Prevent team captain from leaving
+        if (Auth::id() == $team->captain_id) {
+            return redirect()->route('teams.show', $team)
+                ->with('error', 'As team captain, you cannot leave the team. You must either delete the team or transfer captaincy first.');
+        }
+        
+        // Remove team association
+        $player->team_id = null;
+        $player->save();
+        
+        return redirect()->route('dashboard')
+            ->with('success', 'You have left the team successfully.');
+    }
+    
+    /**
+     * Transfer team captaincy to another player.
+     *
+     * @param Request $request
+     * @param int $teamId
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function transferCaptaincy(Request $request, $teamId)
+    {
+        $team = Team::findOrFail($teamId);
+        
+        // Authorization: only team captain can transfer captaincy
+        if (Auth::id() !== $team->captain_id) {
+            return redirect()->route('teams.show', $team)
+                ->with('error', 'Only the team captain can transfer captaincy.');
+        }
+        
+        // Validate the new captain
+        $validated = $request->validate([
+            'new_captain_id' => 'required|exists:players,id',
+        ]);
+        
+        $newCaptain = Player::where('id', $validated['new_captain_id'])
+            ->where('team_id', $teamId)
+            ->first();
+        
+        if (!$newCaptain) {
+            return redirect()->route('teams.show', $team)
+                ->with('error', 'The selected player is not a member of this team.');
+        }
+        
+        // Transfer captaincy
+        $team->captain_id = $newCaptain->id;
+        $team->save();
+        
+        return redirect()->route('teams.show', $team)
+            ->with('success', 'Team captaincy transferred successfully.');
     }
 }

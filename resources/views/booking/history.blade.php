@@ -148,10 +148,7 @@
         <div class="tab-content d-block">
             <!-- Bookings List -->
             <div class="booking-list">
-               
                 @forelse($bookings as $booking)
-
-                
                 <div class="booking-item" data-status="{{ $booking->status }}">
                     <div class="booking-item-header">
                         <div class="booking-item-date">
@@ -171,7 +168,6 @@
                         </div>
                     </div>
                     <div class="booking-item-content">
-                        
                         <div class="booking-item-details">
                             <div class="booking-item-title">{{ $booking->sportfield->name }}</div>
     
@@ -199,10 +195,14 @@
                             </ul>
     
                             <div class="booking-item-actions">
-                                
+                                <!-- View Details Button -->
+                                <a href="{{ route('booking.show', ['player' => session('player_id'), 'field' => $booking->field_id]) }}vendor.pagination.custom" class="btn btn-outline-primary">
+                                    <i class="fas fa-eye"></i>
+                                    View Details
+                                </a>
     
                                 <!-- Edit Button (only for upcoming bookings) -->
-                                @if($booking->status == 'upcoming' )
+                                @if($booking->status == 'upcoming')
                                 <a href="{{ route('bookings.edit', $booking->id) }}" class="btn btn-primary">
                                     <i class="fas fa-edit"></i>
                                     Edit Booking
@@ -223,7 +223,7 @@
                                     <i class="fas fa-redo"></i>
                                     Book Again
                                 </a>
-                            @endif
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -243,11 +243,10 @@
                 @endforelse
             </div>
     
-            <!-- Pagination with fallback styling -->
+            <!-- Pagination -->
             @if($bookings->hasPages())
             <div class="pagination-container">
-               
-                {{ $bookings->appends(request()->except('page'))->links() }}
+                {{ $bookings->appends(request()->except('page'))->links('vendor.pagination.custom') }}
             </div>
             @endif
         </div>
@@ -286,6 +285,7 @@
                     <form id="cancelBookingForm" method="POST" action="">
                         @csrf
                         @method('PUT')
+                        <input type="hidden" name="booking_id" id="cancellation_booking_id" value="">
                         <div class="mb-3">
                             <label for="cancellation_reason" class="form-label">Reason for Cancellation (Optional)</label>
                             <textarea class="form-control" id="cancellation_reason" name="cancellation_reason" rows="3" placeholder="Please provide a reason for your cancellation"></textarea>
@@ -301,71 +301,10 @@
             </div>
         </div>
     </div>
+
     
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Tab navigation
-            const tabItems = document.querySelectorAll('.tab-item');
-            const statusFilter = document.getElementById('statusFilter');
-    
-            if (tabItems.length > 0 && statusFilter) {
-                tabItems.forEach(item => {
-                    item.addEventListener('click', function () {
-                        const status = this.getAttribute('data-tab');
-                        statusFilter.value = status;
-                        document.getElementById('filterForm').submit();
-                    });
-                });
-            }
-    
-            // Status filters
-            const statusFilters = document.querySelectorAll('.status-filter');
-    
-            if (statusFilters.length > 0 && statusFilter) {
-                statusFilters.forEach(filter => {
-                    filter.addEventListener('click', function () {
-                        const status = this.getAttribute('data-status');
-                        statusFilter.value = status;
-                        document.getElementById('filterForm').submit();
-                    });
-                });
-            }
-    
-            // Cancel booking modal
-            const cancelBookingButtons = document.querySelectorAll('.cancel-booking-btn');
-            const cancelBookingForm = document.getElementById('cancelBookingForm');
-    
-            if (cancelBookingButtons.length > 0 && cancelBookingForm) {
-                cancelBookingButtons.forEach(button => {
-                    button.addEventListener('click', function () {
-                        const bookingId = this.getAttribute('data-booking-id');
-                        const bookingReference = this.getAttribute('data-booking-reference');
-                        const bookingField = this.getAttribute('data-booking-field');
-                        const bookingDate = this.getAttribute('data-booking-date');
-                        const bookingTime = this.getAttribute('data-booking-time');
-    
-                        cancelBookingForm.action = `/bookings/${bookingId}/cancel`;
-    
-                        document.getElementById('modal-field-name').textContent = bookingField;
-                        document.getElementById('modal-booking-date').textContent = bookingDate;
-                        document.getElementById('modal-booking-time').textContent = bookingTime;
-                        document.getElementById('modal-booking-reference').textContent = bookingReference;
-                    });
-                });
-    
-                // Form validation before submission
-                const confirmCancelButton = document.getElementById('confirmCancelButton');
-                if (confirmCancelButton) {
-                    confirmCancelButton.addEventListener('click', function () {
-                        // You could add additional validation here if needed
-                        cancelBookingForm.submit();
-                    });
-                }
-            }
-        });
-    </script>
-     <style>
-        /* Bookings History Stylesheet */
+    <style>
+        /* Bookings History Styles */
         :root {
             --primary-color: #2563eb;
             --secondary-color: #0f172a;
@@ -411,10 +350,6 @@
             left: 50%;
             transform: translateX(-50%);
             border-radius: 2px;
-        }
-        
-        .text-secondary {
-            color: var(--text-secondary);
         }
         
         /* Stats cards */
@@ -567,34 +502,6 @@
             box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.25);
             outline: none;
         }
-          /* Minimal pagination fallback styling */
-          .pagination-fallback {
-                        display: flex;
-                        list-style: none;
-                        padding: 0;
-                        margin: 20px 0;
-                        justify-content: center;
-                    }
-                    .pagination-fallback li {
-                        margin: 0 5px;
-                    }
-                    .pagination-fallback a, .pagination-fallback span {
-                        display: block;
-                        padding: 8px 12px;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                        text-decoration: none;
-                        color: #333;
-                    }
-                    .pagination-fallback .active span {
-                        background-color: #2563eb;
-                        color: white;
-                        border-color: #2563eb;
-                    }
-                    .pagination-fallback .disabled span {
-                        color: #aaa;
-                        cursor: not-allowed;
-                    }
         
         .status-filters {
             display: flex;
@@ -713,21 +620,6 @@
             padding: 1.5rem;
         }
         
-        .booking-item-image {
-            width: 180px;
-            height: 140px;
-            border-radius: 8px;
-            overflow: hidden;
-            margin-right: 1.5rem;
-            flex-shrink: 0;
-        }
-        
-        .booking-item-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
         .booking-item-details {
             flex: 1;
         }
@@ -762,6 +654,7 @@
         .booking-item-actions {
             display: flex;
             gap: 0.75rem;
+            flex-wrap: wrap;
         }
         
         .btn {
@@ -773,6 +666,7 @@
             border-radius: 8px;
             transition: all 0.3s ease;
             cursor: pointer;
+            border: 1px solid transparent;
         }
         
         .btn i {
@@ -782,7 +676,6 @@
         .btn-primary {
             background-color: var(--primary-color);
             color: white;
-            border: none;
         }
         
         .btn-primary:hover {
@@ -792,7 +685,7 @@
         .btn-outline-primary {
             background-color: transparent;
             color: var(--primary-color);
-            border: 1px solid var(--primary-color);
+            border-color: var(--primary-color);
         }
         
         .btn-outline-primary:hover {
@@ -802,7 +695,7 @@
         .btn-outline-danger {
             background-color: transparent;
             color: var(--danger-color);
-            border: 1px solid var(--danger-color);
+            border-color: var(--danger-color);
         }
         
         .btn-outline-danger:hover {
@@ -812,7 +705,7 @@
         .btn-outline-success {
             background-color: transparent;
             color: var(--success-color);
-            border: 1px solid var(--success-color);
+            border-color: var(--success-color);
         }
         
         .btn-outline-success:hover {
@@ -822,7 +715,6 @@
         .btn-danger {
             background-color: var(--danger-color);
             color: white;
-            border: none;
         }
         
         .btn-danger:hover {
@@ -832,7 +724,6 @@
         .btn-secondary {
             background-color: #64748b;
             color: white;
-            border: none;
         }
         
         .btn-secondary:hover {
@@ -955,7 +846,7 @@
             display: flex;
             list-style: none;
             padding: 0;
-            gap: 0.3rem;
+            gap: 0.5rem;
         }
         
         .page-item {
@@ -1025,13 +916,6 @@
                 flex-direction: column;
             }
             
-            .booking-item-image {
-                width: 100%;
-                height: 180px;
-                margin-right: 0;
-                margin-bottom: 1rem;
-            }
-            
             .booking-info-list {
                 grid-template-columns: 1fr;
             }
@@ -1055,43 +939,75 @@
                 grid-template-columns: 1fr;
             }
         }
-        </style>
+    </style>
+    
 
-        <script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Tab navigation
+            const tabItems = document.querySelectorAll('.tab-item');
+            const statusFilter = document.getElementById('statusFilter');
+    
+            if (tabItems.length > 0 && statusFilter) {
+                tabItems.forEach(item => {
+                    item.addEventListener('click', function () {
+                        const status = this.getAttribute('data-tab');
+                        statusFilter.value = status;
+                        document.getElementById('filterForm').submit();
+                    });
+                });
+            }
+    
+            // Status filters
+            const statusFilters = document.querySelectorAll('.status-filter');
+    
+            if (statusFilters.length > 0 && statusFilter) {
+                statusFilters.forEach(filter => {
+                    filter.addEventListener('click', function () {
+                        const status = this.getAttribute('data-status');
+                        statusFilter.value = status;
+                        document.getElementById('filterForm').submit();
+                    });
+                });
+            }
+    
             // Cancel booking modal
-const cancelBookingButtons = document.querySelectorAll('.cancel-booking-btn');
-const cancelBookingForm = document.getElementById('cancelBookingForm');
+            const cancelBookingButtons = document.querySelectorAll('.cancel-booking-btn');
+            const cancelBookingForm = document.getElementById('cancelBookingForm');
+    
+            if (cancelBookingButtons.length > 0 && cancelBookingForm) {
+                cancelBookingButtons.forEach(button => {
+                    button.addEventListener('click', function () {
+                        const bookingId = this.getAttribute('data-booking-id');
+                        const bookingReference = this.getAttribute('data-booking-reference');
+                        const bookingField = this.getAttribute('data-booking-field');
+                        const bookingDate = this.getAttribute('data-booking-date');
+                        const bookingTime = this.getAttribute('data-booking-time');
 
-if (cancelBookingButtons.length > 0 && cancelBookingForm) {
-    cancelBookingButtons.forEach(button => {
-        button.addEventListener('click', function () {
-            const bookingId = this.getAttribute('data-booking-id');
-            const bookingReference = this.getAttribute('data-booking-reference');
-            const bookingField = this.getAttribute('data-booking-field');
-            const bookingDate = this.getAttribute('data-booking-date');
-            const bookingTime = this.getAttribute('data-booking-time');
+                        // Set the form action using the Laravel route helper
+                        cancelBookingForm.action = `/bookings/${bookingId}/cancel`;
+                        
+                        // Also set the booking ID in a hidden field as a backup
+                        document.getElementById('cancellation_booking_id').value = bookingId;
 
-            // Set the form action using the Laravel route helper
-            cancelBookingForm.action = `/bookings/${bookingId}/cancel`;
-            
-            // Also set the booking ID in a hidden field as a backup
-            document.getElementById('cancellation_booking_id').value = bookingId;
+                        document.getElementById('modal-field-name').textContent = bookingField;
+                        document.getElementById('modal-booking-date').textContent = bookingDate;
+                        document.getElementById('modal-booking-time').textContent = bookingTime;
+                        document.getElementById('modal-booking-reference').textContent = bookingReference;
+                    });
+                });
 
-            document.getElementById('modal-field-name').textContent = bookingField;
-            document.getElementById('modal-booking-date').textContent = bookingDate;
-            document.getElementById('modal-booking-time').textContent = bookingTime;
-            document.getElementById('modal-booking-reference').textContent = bookingReference;
+                // Form validation before submission
+                const confirmCancelButton = document.getElementById('confirmCancelButton');
+                if (confirmCancelButton) {
+                    confirmCancelButton.addEventListener('click', function () {
+                        // You could add additional validation here if needed
+                        cancelBookingForm.submit();
+                    });
+                }
+            }
         });
-    });
-
-    // Form validation before submission
-    const confirmCancelButton = document.getElementById('confirmCancelButton');
-    if (confirmCancelButton) {
-        confirmCancelButton.addEventListener('click', function () {
-            // You could add additional validation here if needed
-            cancelBookingForm.submit();
-        });
-    }
-}
-        </script>
+    </script>
+   
 </x-layout>

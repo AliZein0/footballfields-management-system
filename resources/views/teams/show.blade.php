@@ -1,10 +1,16 @@
-<x-layout title="{{ $team->name }}" >
-
+<x-layout title="{{ $team->name }}">
     <div class="container py-4">
         <!-- Success Message -->
         @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        @endif
+
+        @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i> {{ session('error') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
         @endif
@@ -35,28 +41,38 @@
                         @endif
                     </div>
                     <div class="col-md-3 text-md-end mt-3 mt-md-0">
-                        <a href="{{ route('teams.edit', $team->id) }}" class="btn btn-light me-2">
-                            <i class="fas fa-edit me-1"></i> Edit
-                        </a>
-                        <div class="dropdown d-inline-block">
-                            <button class="btn btn-light dropdown-toggle" type="button" id="teamActionsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-ellipsis-v"></i>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="teamActionsDropdown">
-                                <li><a class="dropdown-item" href="{{ route('teams.players.browse', $team->id) }}"><i class="fas fa-user-plus me-2"></i> Add Player</a></li>
-                                <li><a class="dropdown-item" href="#"><i class="fas fa-calendar-plus me-2"></i> Schedule Game</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <form action="{{ route('teams.destroy', $team->id) }}" method="POST" class="d-inline delete-form">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="dropdown-item text-danger">
-                                            <i class="fas fa-trash-alt me-2"></i> Delete Team
-                                        </button>
-                                    </form>
-                                </li>
-                            </ul>
-                        </div>
+                        @if(Auth::id() === $team->captain_id)
+                            <a href="{{ route('teams.edit', $team->id) }}" class="btn btn-light me-2">
+                                <i class="fas fa-edit me-1"></i> Edit
+                            </a>
+                            <div class="dropdown d-inline-block">
+                                <button class="btn btn-light dropdown-toggle" type="button" id="teamActionsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="teamActionsDropdown">
+                                    <li><a class="dropdown-item" href="{{ route('teams.players.browse', $team->id) }}"><i class="fas fa-user-plus me-2"></i> Invite Player</a></li>
+                                    <li><a class="dropdown-item" href="{{ route('invitations.team', $team->id) }}"><i class="fas fa-envelope me-2"></i> Manage Invitations</a></li>
+                                    <li><a class="dropdown-item" href="#"><i class="fas fa-calendar-plus me-2"></i> Schedule Game</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form action="{{ route('teams.destroy', $team->id) }}" method="POST" class="d-inline delete-form">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="dropdown-item text-danger">
+                                                <i class="fas fa-trash-alt me-2"></i> Delete Team
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        @else
+                            <form action="{{ route('teams.leave', $team->id) }}" method="POST" class="d-inline leave-team-form">
+                                @csrf
+                                <button type="submit" class="btn btn-light">
+                                    <i class="fas fa-sign-out-alt me-1"></i> Leave Team
+                                </button>
+                            </form>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -79,6 +95,10 @@
                             <li class="list-group-item d-flex justify-content-between px-0">
                                 <span>Team Size</span>
                                 <span class="text-primary">{{ $team->size }} Players</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between px-0">
+                                <span>Captain</span>
+                                <span class="text-primary">{{ $team->captain->name }}</span>
                             </li>
                             @if($team->home_venue)
                             <li class="list-group-item d-flex justify-content-between px-0">
@@ -137,9 +157,24 @@
                 <div class="card mb-4">
                     <div class="card-header bg-light d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">Players</h5>
-                        <a href="{{ route('teams.players.browse', $team->id) }}" class="btn btn-sm btn-primary">
-                            <i class="fas fa-plus me-1"></i> Add Player
-                        </a>
+                        
+                        @if(Auth::id() === $team->captain_id)
+                            <div>
+                                <a href="{{ route('invitations.team', $team->id) }}" class="btn btn-sm btn-outline-primary me-2">
+                                    <i class="fas fa-envelope me-1"></i> 
+                                    Pending Invitations
+                                    @php
+                                        $pendingCount = $team->pendingInvitations()->count();
+                                    @endphp
+                                    @if($pendingCount > 0)
+                                        <span class="badge bg-danger ms-1">{{ $pendingCount }}</span>
+                                    @endif
+                                </a>
+                                <a href="{{ route('teams.players.browse', $team->id) }}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-user-plus me-1"></i> Invite Player
+                                </a>
+                            </div>
+                        @endif
                     </div>
                     <div class="card-body">
                         @if(isset($team->players) && count($team->players) > 0)
@@ -167,12 +202,10 @@
                                                 </div>
                                             </div>
                                         </td>
-                                        <td>{{ $player->location ?? 'Not specified' }}</td>
+                                        <td>{{ $player->user->address ?? 'Not specified' }}</td>
                                         <td>
-                                            @if($player->preferred_sports && is_array($player->preferred_sports))
-                                                @foreach($player->preferred_sports as $sport)
-                                                    <span class="badge bg-light text-dark me-1">{{ $sport }}</span>
-                                                @endforeach
+                                            @if($player->sport)
+                                                <span class="badge bg-light text-dark me-1">{{ $player->sport }}</span>
                                             @else
                                                 <span class="text-muted">None specified</span>
                                             @endif
@@ -181,13 +214,16 @@
                                             <a href="{{ route('teams.players.show', [$team->id, $player->id]) }}" class="btn btn-sm btn-outline-secondary">
                                                 <i class="fas fa-eye"></i>
                                             </a>
-                                            <form action="{{ route('teams.players.remove', [$team->id, $player->id]) }}" method="POST" class="d-inline delete-player-form">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-outline-danger">
-                                                    <i class="fas fa-user-minus"></i>
-                                                </button>
-                                            </form>
+                                            
+                                            @if(Auth::id() === $team->captain_id && $player->id !== $team->captain_id)
+                                                <form action="{{ route('teams.players.remove', [$team->id, $player->id]) }}" method="POST" class="d-inline delete-player-form">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                        <i class="fas fa-user-minus"></i>
+                                                    </button>
+                                                </form>
+                                            @endif
                                         </td>
                                     </tr>
                                     @endforeach
@@ -202,7 +238,7 @@
                             <h4>No Players Yet</h4>
                             <p class="text-muted">Start building your team by adding players</p>
                             <a href="{{ route('teams.players.browse', $team->id) }}" class="btn btn-primary">
-                                <i class="fas fa-plus me-2"></i> Add Players
+                                <i class="fas fa-plus me-2"></i> Invite Players
                             </a>
                         </div>
                         @endif
@@ -214,40 +250,58 @@
                     <div class="card-header bg-light d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">Upcoming Games</h5>
                         <a href="{{route('tournaments.browse')}}" class="btn btn-sm btn-primary">
-                            <i class="fas fa-plus me-1"></i> Schedule Game
+                            <i class="fas fa-trophy me-1"></i> Browse Tournaments
                         </a>
                     </div>
                     <div class="card-body">
-                        @if(isset($team->games) && count($team->games) > 0)
+                        @php
+                            // Get upcoming tournaments that the team has joined
+                            $upcomingTournaments = [];
+                            if(isset($team) && $team) {
+                                $upcomingTournaments = DB::table('tournaments')
+                                    ->join('team_tournament', 'tournaments.id', '=', 'team_tournament.tournament_id')
+                                    ->where('team_tournament.team_id', $team->id)
+                                    ->where('tournaments.start_date', '>=', now())
+                                    ->orderBy('tournaments.start_date', 'asc')
+                                    ->select('tournaments.*')
+                                    ->limit(3)
+                                    ->get();
+                            }
+                        @endphp
+
+                        @if(count($upcomingTournaments) > 0)
                         <div class="list-group">
-                            @foreach($team->games as $game)
-                            <div class="list-group-item">
+                            @foreach($upcomingTournaments as $tournament)
+                            <a href="{{ route('tournaments.show', $tournament->id) }}" class="list-group-item list-group-item-action">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <h6 class="mb-1">{{ $game->opponent_name }}</h6>
+                                        <h6 class="mb-1">{{ $tournament->name }}</h6>
                                         <p class="small text-muted mb-0">
-                                            <i class="fas fa-calendar me-1"></i> {{ \Carbon\Carbon::parse($game->game_date)->format('F j, Y') }} 
-                                            <i class="fas fa-clock ms-2 me-1"></i> {{ \Carbon\Carbon::parse($game->game_time)->format('g:i A') }}
+                                            <i class="fas fa-calendar me-1"></i> {{ \Carbon\Carbon::parse($tournament->start_date)->format('F j, Y') }}
+                                            @if(isset($tournament->sportField))
+                                            <i class="fas fa-basketball-ball ms-2 me-1"></i> {{ ucfirst($tournament->sportField->type) }}
+                                            @endif
                                         </p>
                                     </div>
+                                    
                                     <div>
-                                        <span class="badge bg-{{ $game->is_home_game ? 'success' : 'info' }}">
-                                            {{ $game->is_home_game ? 'Home' : 'Away' }}
+                                        <span class="badge bg-primary">
+                                            <i class="fas fa-arrow-right"></i>
                                         </span>
                                     </div>
                                 </div>
-                            </div>
+                            </a>
                             @endforeach
                         </div>
                         @else
                         <div class="text-center py-5">
                             <div class="mb-3">
-                                <i class="fas fa-calendar-alt fa-4x text-muted"></i>
+                                <i class="fas fa-trophy fa-4x text-muted"></i>
                             </div>
-                            <h4>No Upcoming Games</h4>
-                            <p class="text-muted">Start scheduling games for your team</p>
-                            <a href="#" class="btn btn-primary">
-                                <i class="fas fa-plus me-2"></i> Schedule Game
+                            <h4>No Upcoming Tournaments</h4>
+                            <p class="text-muted">Join tournaments to compete with your team</p>
+                            <a href="{{route('tournaments.browse')}}" class="btn btn-primary">
+                                <i class="fas fa-search me-2"></i> Browse Tournaments
                             </a>
                         </div>
                         @endif
@@ -293,6 +347,16 @@
                 }
             });
         });
+        
+        // Confirm leave team
+        document.querySelectorAll('.leave-team-form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                if (confirm('Are you sure you want to leave this team?')) {
+                    this.submit();
+                }
+            });
+        });
     </script>
     
-    </x-layout>`
+</x-layout>

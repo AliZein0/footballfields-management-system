@@ -1,654 +1,1271 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="csrf-token" content="{{ csrf_token() }}">
-  <title>Sports Team Creation Process</title>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <title>Create Your Team</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome 6 -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" rel="stylesheet">
+  <!-- Custom Styling -->
   <style>
-    .step-indicator {
+    :root {
+      --primary-color: #4361ee;
+      --primary-light: #eef2ff;
+      --primary-dark: #3a56d4;
+      --success-color: #2ec4b6;
+      --danger-color: #e63946;
+      --accent-color: #ff9f1c;
+      --text-color: #2b2d42;
+      --text-light: #8d99ae;
+      --gray-light: #f8f9fa;
+      --white: #ffffff;
+      --border-radius: 12px;
+      --box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+      --transition: all 0.3s ease;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #f9fafb;
+      color: var(--text-color);
+    }
+
+    /* Header Styling */
+    .hero-section {
+      background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-color) 100%);
+      padding: 3rem 0;
+      margin-bottom: 2rem;
+      border-radius: 0 0 20px 20px;
+      box-shadow: var(--box-shadow);
+    }
+
+    .hero-heading {
+      color: var(--white);
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .hero-text {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 1.1rem;
+      max-width: 80%;
+      margin: 0 auto;
+    }
+
+    /* Step Progress Styling */
+    .step-progress {
+      margin-bottom: 3rem;
+      position: relative;
+      padding: 0 1rem;
+    }
+
+    .progress-container {
+      background: var(--gray-light);
+      height: 8px;
+      border-radius: 4px;
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-bar {
+      background: linear-gradient(90deg, var(--primary-color), var(--primary-dark));
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+
+    .step-indicators {
       display: flex;
       justify-content: space-between;
+      position: absolute;
+      width: calc(100% - 2rem);
+      top: -10px;
+      left: 1rem;
+    }
+
+    .step-indicator {
+      position: relative;
+      z-index: 2;
+    }
+
+    .step-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 1.1rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+      transition: var(--transition);
+      background-color: var(--white);
+      color: var(--text-light);
+      border: 2px solid var(--gray-light);
+    }
+
+    .step-btn.active {
+      background-color: var(--primary-color);
+      color: var(--white);
+      border-color: var(--primary-light);
+      transform: scale(1.1);
+    }
+
+    .step-btn.completed {
+      background-color: var(--success-color);
+      color: var(--white);
+      border-color: var(--success-color);
+    }
+
+    .step-labels {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .step-label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-align: center;
+      color: var(--text-light);
+      transition: var(--transition);
+      width: 25%;
+    }
+
+    .step-label.active {
+      color: var(--primary-dark);
+    }
+
+    .step-label.completed {
+      color: var(--success-color);
+    }
+
+    /* Card Styling */
+    .form-card {
+      background: var(--white);
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      border: none;
+      overflow: hidden;
       margin-bottom: 2rem;
     }
-    .step {
-      text-align: center;
-      position: relative;
-      flex: 1;
+
+    .card-header {
+      background-color: var(--white);
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+      padding: 1.5rem 2rem;
     }
-    .step:not(:last-child):after {
-      content: '';
-      position: absolute;
-      top: 25px;
-      left: 50%;
-      width: 100%;
-      height: 2px;
-      background-color: #e9ecef;
-      z-index: 0;
+
+    .card-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary-dark);
+      margin-bottom: 0;
     }
-    .step-number {
-      width: 50px;
-      height: 50px;
+
+    .card-subtitle {
+      color: var(--text-light);
+      font-size: 1rem;
+      margin-top: 0.5rem;
+    }
+
+    .card-body {
+      padding: 2rem;
+    }
+
+    /* Form Styling */
+    .form-label {
+      font-weight: 600;
+      color: var(--text-color);
+      margin-bottom: 0.5rem;
+    }
+
+    .form-control, .form-select {
+      padding: 0.8rem 1.2rem;
+      border-radius: 8px;
+      border: 1px solid rgba(0,0,0,0.12);
+      box-shadow: none;
+      transition: var(--transition);
+    }
+
+    .form-control:focus, .form-select:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+    }
+
+    .form-text {
+      color: var(--text-light);
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    /* Logo Upload Styling */
+    .logo-upload-container {
+      width: 180px;
+      height: 180px;
       border-radius: 50%;
-      background-color: #e9ecef;
-      color: #6c757d;
+      overflow: hidden;
+      margin: 0 auto 1.5rem;
+      background-color: var(--primary-light);
+      position: relative;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border: 3px solid var(--white);
+      transition: var(--transition);
+    }
+
+    .logo-upload-container:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    .logo-placeholder {
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      margin: 0 auto 10px;
-      position: relative;
-      z-index: 1;
-      font-weight: bold;
-      font-size: 1.2rem;
-      transition: all 0.3s;
+      height: 100%;
+      color: var(--primary-color);
     }
-    .step.active .step-number {
-      background-color: #0d6efd;
-      color: white;
-    }
-    .step.completed .step-number {
-      background-color: #198754;
-      color: white;
-    }
-    .step-title {
-      font-size: 0.9rem;
-      color: #6c757d;
-    }
-    .step.active .step-title {
-      color: #0d6efd;
-      font-weight: bold;
-    }
-    .step.completed .step-title {
-      color: #198754;
-    }
-    .tab-content {
-      padding: 1.5rem;
-      border: 1px solid #dee2e6;
-      border-radius: 0.5rem;
-    }
+
     .logo-preview {
-      width: 120px;
-      height: 120px;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .upload-icon {
+      font-size: 2.5rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .upload-text {
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .custom-file-input {
+      display: none;
+    }
+
+    .logo-upload-label {
+      display: block;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    /* Social Media Inputs */
+    .social-input-group {
+      margin-bottom: 1rem;
+      position: relative;
+    }
+
+    .social-icon {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.2rem;
+      color: var(--text-light);
+      z-index: 10;
+    }
+
+    .social-input {
+      padding-left: 3rem;
+    }
+
+    /* Button Styling */
+    .btn {
+      padding: 0.8rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: var(--transition);
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-dark);
+      border-color: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(67, 97, 238, 0.3);
+    }
+
+    .btn-secondary {
+      background-color: #f0f2f5;
+      border-color: #f0f2f5;
+      color: var(--text-color);
+    }
+
+    .btn-secondary:hover {
+      background-color: #e2e6ea;
+      border-color: #e2e6ea;
+      color: var(--text-color);
+    }
+
+    .btn-success {
+      background-color: var(--success-color);
+      border-color: var(--success-color);
+    }
+
+    .btn-success:hover {
+      background-color: #25b0a3;
+      border-color: #25b0a3;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(46, 196, 182, 0.3);
+    }
+
+    .btn-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: 0.5rem;
+    }
+
+    .btn-lg {
+      padding: 1rem 2rem;
+      font-size: 1.1rem;
+    }
+
+    /* Review Section Styling */
+    .team-profile {
+      display: flex;
+      align-items: center;
+      border-radius: 12px;
+      padding: 1.5rem;
+      background-color: var(--primary-light);
+      margin-bottom: 1.5rem;
+    }
+
+    .team-logo-large {
+      width: 100px;
+      height: 100px;
       border-radius: 50%;
-      background-color: #f8f9fa;
+      background-color: var(--white);
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0 auto;
-      border: 1px dashed #ced4da;
-      color: #6c757d;
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      margin-right: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .team-info h3 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--primary-dark);
+      margin-bottom: 0.3rem;
+    }
+
+    .team-info p {
+      margin-bottom: 0.5rem;
+      color: var(--text-color);
+      display: flex;
+      align-items: center;
+    }
+
+    .team-info .team-motto {
+      font-style: italic;
+      color: var(--text-light);
+      margin-top: 0.5rem;
+    }
+
+    .info-icon {
+      margin-right: 0.5rem;
+      color: var(--primary-color);
+    }
+
+    .review-section {
+      margin-bottom: 1.5rem;
+    }
+
+    .review-header {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-light);
+      margin-bottom: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .review-content {
+      background-color: var(--gray-light);
+      border-radius: 8px;
+      padding: 1.2rem;
+    }
+
+    .review-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .review-list li {
+      margin-bottom: 0.8rem;
+      display: flex;
+      align-items: center;
+    }
+
+    .review-list li:last-child {
+      margin-bottom: 0;
+    }
+
+    .review-list-label {
+      font-weight: 600;
+      margin-right: 0.5rem;
+      min-width: 100px;
+    }
+
+    .social-review-item {
+      display: flex;
+      align-items: center;
+    }
+
+    .social-review-icon {
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      color: var(--white);
+      margin-right: 0.5rem;
+    }
+
+    .twitter-bg {
+      background-color: #1DA1F2;
+    }
+
+    .instagram-bg {
+      background-color: #E1306C;
+    }
+
+    .facebook-bg {
+      background-color: #4267B2;
+    }
+
+    /* Benefit Cards */
+    .benefits-section {
+      margin-top: 3rem;
+    }
+
+    .benefit-card {
+      height: 100%;
+      border-radius: var(--border-radius);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      border: none;
+      transition: var(--transition);
       overflow: hidden;
     }
-    .sport-card {
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-    .sport-card:hover {
+
+    .benefit-card:hover {
       transform: translateY(-5px);
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     }
-    .sport-card.selected {
-      border: 2px solid #0d6efd;
-    }
-    .sport-icon {
-      width: 120px;
-      height: 120px;
-      border-radius: 0.5rem;
+
+    .benefit-icon-wrapper {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0 auto 1rem;
-      cursor: pointer;
-      transition: all 0.3s;
+      margin: 0 auto 1.2rem;
+      background-color: var(--primary-light);
     }
-    .sport-icon:hover {
-      transform: translateY(-5px);
+
+    .benefit-icon {
+      font-size: 1.8rem;
+      color: var(--primary-color);
+    }
+
+    .benefit-title {
+      font-weight: 700;
+      font-size: 1.25rem;
+      margin-bottom: 0.8rem;
+      color: var(--text-color);
+    }
+
+    .benefit-text {
+      color: var(--text-light);
+      margin-bottom: 0;
+      font-size: 0.95rem;
+    }
+
+    /* Animation Effects */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .step-content {
+      animation: fadeInUp 0.5s ease forwards;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+      .hero-section {
+        padding: 2rem 0;
+      }
+
+      .hero-text {
+        max-width: 100%;
+      }
+
+      .card-body {
+        padding: 1.5rem;
+      }
+
+      .team-profile {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .team-logo-large {
+        margin-right: 0;
+        margin-bottom: 1rem;
+      }
+
+      .step-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 0.9rem;
+      }
+
+      .step-label {
+        font-size: 0.8rem;
+      }
     }
   </style>
 </head>
 <body>
-  <!-- Main Content -->
-  <div class="container py-5">
-    <div class="row justify-content-center">
-      <div class="col-xl-10">
-        @if(session('info'))
-          <div class="alert alert-info">{{ session('info') }}</div>
-        @endif
-        
-        @if(session('error'))
-          <div class="alert alert-danger">{{ session('error') }}</div>
-        @endif
-        
-        @if(!auth()->check())
-          <!-- User not logged in -->
-          <div class="text-center py-5">
-            <div class="mb-4">
-              <i class="fas fa-lock fa-4x text-secondary"></i>
-            </div>
-            <h2>Authentication Required</h2>
-            <p class="text-muted mb-4">You need to log in to create a team.</p>
-            <a href="" class="btn btn-primary btn-lg px-4">
-              <i class="fas fa-sign-in-alt me-2"></i> Log In
-            </a>
-            <p class="mt-3">
-              Don't have an account? <a href="">Register now</a>
-            </p>
-          </div>
-         <!-- Replace the existing elseif condition with this updated code -->
-@elseif(auth()->user()->hasTeam())
-<!-- Check if user is team captain -->
-@if(auth()->user()->isCaptainOfCurrentTeam())
-  <script>
-    // Immediately redirect to team show page if user is team captain
-    window.location.href = "{{ route('teams.show', auth()->user()->team) }}";
-  </script>
-@else
-  <!-- User already has a team but is not the captain -->
-  <div class="text-center py-5">
-    <div class="mb-4">
-      <i class="fas fa-users fa-4x text-primary"></i>
+  <section class="hero-section text-center">
+    <div class="container">
+      <h1 class="hero-heading">Create Your Dream Team</h1>
+      <p class="hero-text">Set up your team profile, invite players, and start competing in just a few simple steps.</p>
     </div>
-    <h2>You Already Have a Team</h2>
-    <p class="text-muted mb-4">You've already created or joined a team.</p>
-    <a href="{{ route('teams.show', auth()->user()->team) }}" class="btn btn-primary btn-lg px-4">
-      <i class="fas fa-arrow-right me-2"></i> Go to My Team
-    </a>
-  </div>
-@endif
-          <!-- User logged in and doesn't have a team -->
-          <h2 class="text-center mb-4">Create Your Sports Team</h2>
-          <p class="text-center text-muted mb-5">Follow the steps below to set up your team from scratch</p>
-          
-          <!-- Step Indicator -->
-          <div class="step-indicator mb-5">
-            <div class="step active">
-              <div class="step-number">1</div>
-              <div class="step-title">Select Sport</div>
-            </div>
-            <div class="step">
-              <div class="step-number">2</div>
-              <div class="step-title">Team Details</div>
-            </div>
-            <div class="step">
-              <div class="step-number">3</div>
-              <div class="step-title">Team Identity</div>
-            </div>
-            <div class="step">
-              <div class="step-number">4</div>
-              <div class="step-title">Review & Finish</div>
+  </section>
+
+  <div class="container py-4">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <!-- Team Status Check -->
+        <div id="team-status-check" style="display: none;">
+          <div class="alert alert-info mb-4" style="border-radius: 12px; border-left: 4px solid var(--primary-color);">
+            <div class="d-flex align-items-center">
+              <div class="me-3">
+                <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+              </div>
+              <div>
+                <h5 class="alert-heading mb-1">Checking your team status...</h5>
+                <p class="mb-0">Please wait while we redirect you to the appropriate page.</p>
+              </div>
             </div>
           </div>
-          
-          <!-- Steps Content -->
-          <form action="{{ route('teams.store') }}" method="POST" enctype="multipart/form-data" id="teamCreationForm">
+        </div>
+        <!-- Step Progress -->
+        <div id="create-team-form-wrapper">
+          <div class="step-progress">
+          <div class="progress-container">
+            <div class="progress-bar" id="progress-bar" style="width: 0%"></div>
+          </div>
+          <div class="step-indicators">
+            <div class="step-indicator">
+              <button class="step-btn active" data-step="1">1</button>
+            </div>
+            <div class="step-indicator">
+              <button class="step-btn" data-step="2">2</button>
+            </div>
+            <div class="step-indicator">
+              <button class="step-btn" data-step="3">3</button>
+            </div>
+            <div class="step-indicator">
+              <button class="step-btn" data-step="4">4</button>
+            </div>
+          </div>
+          <div class="step-labels">
+            <div class="step-label active">Basics</div>
+            <div class="step-label">Details</div>
+            <div class="step-label">Identity</div>
+            <div class="step-label">Review</div>
+          </div>
+        </div>
+      
+        <!-- Form Card -->
+        <div class="form-card">
+          <form action="{{ route('teams.store') }}" method="POST" id="create-team-form" enctype="multipart/form-data">
             @csrf
-            <input type="hidden" name="sportType" id="sportType" value="basketball">
             
-            <div class="tab-content">
-              <!-- Step 1: Select Sport -->
-              <div id="step1" class="tab-pane fade show active">
-                <h4 class="mb-4">Select Your Sport</h4>
-                <div class="row g-4">
-                  <div class="col-md-4 col-6">
-                    <div class="card sport-card selected h-100 text-center" data-sport="basketball">
-                      <div class="card-body">
-                        <div class="sport-icon bg-primary text-white">
-                          <i class="fas fa-basketball fa-3x"></i>
-                        </div>
-                        <h5 class="card-title">Basketball</h5>
-                        <p class="card-text small text-muted">5 players on court</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-md-4 col-6">
-                    <div class="card sport-card h-100 text-center" data-sport="football">
-                      <div class="card-body">
-                        <div class="sport-icon bg-success text-white">
-                          <i class="fas fa-futbol fa-3x"></i>
-                        </div>
-                        <h5 class="card-title">Football</h5>
-                        <p class="card-text small text-muted">11 players on field</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-md-4 col-6">
-                    <div class="card sport-card h-100 text-center" data-sport="tennis">
-                      <div class="card-body">
-                        <div class="sport-icon bg-warning text-white">
-                          <i class="fas fa-table-tennis fa-3x"></i>
-                        </div>
-                        <h5 class="card-title">Tennis</h5>
-                        <p class="card-text small text-muted">2/4 players on field</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-md-4 col-6">
-                    <div class="card sport-card h-100 text-center" data-sport="volleyball">
-                      <div class="card-body">
-                        <div class="sport-icon bg-secondary text-white">
-                          <i class="fas fa-volleyball-ball fa-3x"></i>
-                        </div>
-                        <h5 class="card-title">Volleyball</h5>
-                        <p class="card-text small text-muted">6 players on court</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="d-flex justify-content-end mt-4">
-                  <button type="button" class="btn btn-primary px-4" id="step1Next">Continue</button>
-                </div>
+            <!-- Step 1: Basic Information -->
+            <div class="step-content" id="step-1">
+              <div class="card-header">
+                <h4 class="card-title">Team Basics</h4>
+                <p class="card-subtitle">Let's start with some fundamental information about your team.</p>
               </div>
-              
-              <!-- Step 2: Team Details -->
-              <div id="step2" class="tab-pane fade">
-                <h4 class="mb-4">Enter Team Details</h4>
-                <div class="row g-3">
-                  <div class="col-md-6">
-                    <div class="form-floating mb-3">
-                      <input type="text" class="form-control @error('teamName') is-invalid @enderror" id="teamName" name="teamName" placeholder="Team Name" value="{{ old('teamName') }}" required>
-                      <label for="teamName">Team Name *</label>
-                      @error('teamName')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                      @enderror
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <div class="form-floating mb-3">
-                      <select class="form-select @error('teamSize') is-invalid @enderror" id="teamSize" name="teamSize" required>
-                        <option value="5" {{ old('teamSize') == 5 ? 'selected' : '' }}>5 players (minimum)</option>
-                        <option value="10" {{ old('teamSize') == 10 ? 'selected' : '' }}>10 players</option>
-                        <option value="12" {{ old('teamSize') == 12 ? 'selected' : '' }}>12 players</option>
-                        <option value="15" {{ old('teamSize') == 15 ? 'selected' : '' }}>15 players</option>
-                        <option value="18" {{ old('teamSize') == 18 ? 'selected' : '' }}>18 players</option>
-                        <option value="20" {{ old('teamSize') == 20 ? 'selected' : '' }}>20+ players</option>
-                      </select>
-                      <label for="teamSize">Team Size *</label>
-                      @error('teamSize')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                      @enderror
-                    </div>
-                  </div>
-                </div>
-                <div class="col-12">
-                  <div class="form-floating mb-3">
-                    <textarea class="form-control @error('teamDescription') is-invalid @enderror" id="teamDescription" name="teamDescription" style="height: 100px" placeholder="Team Description">{{ old('teamDescription') }}</textarea>
-                    <label for="teamDescription">Team Description</label>
-                    @error('teamDescription')
+              <div class="card-body">
+                <!-- Team Name -->
+                <div class="form-group">
+                  <label for="teamName" class="form-label">Team Name <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control @error('teamName') is-invalid @enderror" id="teamName" name="teamName" value="{{ old('teamName') }}" placeholder="Enter your team name" required>
+                  <div class="form-text">Choose a unique and memorable name that represents your team</div>
+                  @error('teamName')
                       <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                  </div>
+                  @enderror
                 </div>
-                <div class="row g-3">
-                  <div class="col-md-6">
-                    <div class="form-floating mb-3">
-                      <input type="text" class="form-control @error('homeVenue') is-invalid @enderror" id="homeVenue" name="homeVenue" placeholder="Home Venue" value="{{ old('homeVenue') }}">
-                      <label for="homeVenue">Home Venue</label>
-                      @error('homeVenue')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                      @enderror
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <div class="form-floating mb-3">
-                      <input type="date" class="form-control @error('foundingDate') is-invalid @enderror" id="foundingDate" name="foundingDate" value="{{ old('foundingDate') }}">
-                      <label for="foundingDate">Founded Date</label>
-                      @error('foundingDate')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                      @enderror
-                    </div>
-                  </div>
+                
+                <!-- Sport Type -->
+                <div class="form-group">
+                  <label for="sportType" class="form-label">Sport Type <span class="text-danger">*</span></label>
+                  <select class="form-select @error('sportType') is-invalid @enderror" id="sportType" name="sportType" required>
+                    <option value="">Select Sport</option>
+                    <option value="football" {{ old('sportType') == 'football' ? 'selected' : '' }}>Football</option>
+                    <option value="basketball" {{ old('sportType') == 'basketball' ? 'selected' : '' }}>Basketball</option>
+                    <option value="tennis" {{ old('sportType') == 'tennis' ? 'selected' : '' }}>Tennis</option>
+                    <option value="volleyball" {{ old('sportType') == 'volleyball' ? 'selected' : '' }}>Volleyball</option>
+                  </select>
+                  <div class="form-text">What sport will your team play?</div>
+                  @error('sportType')
+                      <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
                 </div>
-                <div class="d-flex justify-content-between mt-4">
-                  <button type="button" class="btn btn-outline-secondary px-4" id="step2Prev">Back</button>
-                  <button type="button" class="btn btn-primary px-4" id="step2Next">Continue</button>
+                
+                <!-- Team Size -->
+                <div class="form-group">
+                  <label for="teamSize" class="form-label">Team Size <span class="text-danger">*</span></label>
+                  <input type="number" class="form-control @error('teamSize') is-invalid @enderror" id="teamSize" name="teamSize" value="{{ old('teamSize') }}" min="2" max="50" placeholder="Number of players" required>
+                  <div class="form-text">How many players do you need for your team?</div>
+                  @error('teamSize')
+                      <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
+                </div>
+                
+                <div class="d-flex justify-content-end mt-4">
+                  <button type="button" class="btn btn-primary next-btn" data-step="1">
+                    Continue <i class="fas fa-arrow-right btn-icon"></i>
+                  </button>
                 </div>
               </div>
-              
-              <!-- Step 3: Team Identity -->
-              <div id="step3" class="tab-pane fade">
-                <h4 class="mb-4">Create Team Identity</h4>
-                <div class="row g-4">
-                  <div class="col-md-6">
-                    <div class="card h-100">
-                      <div class="card-body">
-                        <h5 class="card-title">Team Logo</h5>
-                        <div class="logo-preview mb-3" id="logoPreview">
-                          <i class="fas fa-cloud-upload-alt fa-3x"></i>
-                        </div>
-                        <div class="d-grid">
-                          <input type="file" class="form-control @error('teamLogo') is-invalid @enderror" id="teamLogo" name="teamLogo" accept="image/*" style="display: none">
-                          <button type="button" class="btn btn-outline-primary" id="uploadLogoBtn">Upload Logo</button>
-                        </div>
-                        <p class="small text-muted mt-2">
-                          Recommended size: at least 500x500 pixels. Max file size: 5MB.
-                        </p>
-                        @error('teamLogo')
-                          <div class="invalid-feedback d-block">{{ $message }}</div>
-                        @enderror
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <div class="card h-100">
-                      <div class="card-body">
-                        <h5 class="card-title">Team Motto & Social</h5>
-                        <div class="form-floating mb-3">
-                          <input type="text" class="form-control @error('teamMotto') is-invalid @enderror" id="teamMotto" name="teamMotto" placeholder="Team Motto" value="{{ old('teamMotto') }}">
-                          <label for="teamMotto">Team Motto/Slogan</label>
-                          @error('teamMotto')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                          @enderror
-                        </div>
-                        <div class="mb-3">
-                          <label class="form-label">Social Media Handles</label>
-                          <div class="input-group mb-2">
-                            <span class="input-group-text"><i class="fab fa-twitter"></i></span>
-                            <input type="text" class="form-control" name="twitterHandle" placeholder="Twitter handle" value="{{ old('twitterHandle') }}">
-                          </div>
-                          <div class="input-group mb-2">
-                            <span class="input-group-text"><i class="fab fa-instagram"></i></span>
-                            <input type="text" class="form-control" name="instagramHandle" placeholder="Instagram handle" value="{{ old('instagramHandle') }}">
-                          </div>
-                          <div class="input-group">
-                            <span class="input-group-text"><i class="fab fa-facebook"></i></span>
-                            <input type="text" class="form-control" name="facebookPage" placeholder="Facebook page" value="{{ old('facebookPage') }}">
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+            </div>
+            
+            <!-- Step 2: Additional Details -->
+            <div class="step-content d-none" id="step-2">
+              <div class="card-header">
+                <h4 class="card-title">Team Details</h4>
+                <p class="card-subtitle">Tell us more about your team's story and goals.</p>
+              </div>
+              <div class="card-body">
+                <!-- Team Description -->
+                <div class="form-group">
+                  <label for="teamDescription" class="form-label">Team Description</label>
+                  <textarea class="form-control @error('teamDescription') is-invalid @enderror" id="teamDescription" name="teamDescription" rows="3" placeholder="Describe your team's goals, playing style, and values">{{ old('teamDescription') }}</textarea>
+                  <div class="form-text">Help others understand what makes your team special</div>
+                  @error('teamDescription')
+                      <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
                 </div>
+                
+                <!-- Home Venue -->
+                <div class="form-group">
+                  <label for="homeVenue" class="form-label">Home Venue</label>
+                  <input type="text" class="form-control @error('homeVenue') is-invalid @enderror" id="homeVenue" name="homeVenue" value="{{ old('homeVenue') }}" placeholder="Where does your team practice/play?">
+                  <div class="form-text">Where does your team typically practice or play?</div>
+                  @error('homeVenue')
+                      <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
+                </div>
+                
+                <!-- Founded Date -->
+                <div class="form-group">
+                  <label for="foundingDate" class="form-label">Founded Date</label>
+                  <div class="input-group">
+                    <input type="date" class="form-control @error('foundingDate') is-invalid @enderror" id="foundingDate" name="foundingDate" value="{{ old('foundingDate') }}">
+                    <button type="button" class="btn btn-outline-primary" id="setTodayBtn">Set Today</button>
+                  </div>
+                  <div class="form-text">When was your team established? Default is today's date.</div>
+                  @error('foundingDate')
+                      <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
+                </div>
+                
+                <!-- Team Motto -->
+                <div class="form-group">
+                  <label for="teamMotto" class="form-label">Team Motto</label>
+                  <input type="text" class="form-control @error('teamMotto') is-invalid @enderror" id="teamMotto" name="teamMotto" value="{{ old('teamMotto') }}" placeholder="A phrase that represents your team spirit">
+                  <div class="form-text">A slogan or phrase that represents your team spirit</div>
+                  @error('teamMotto')
+                      <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
+                </div>
+                
                 <div class="d-flex justify-content-between mt-4">
-                  <button type="button" class="btn btn-outline-secondary px-4" id="step3Prev">Back</button>
-                  <button type="button" class="btn btn-primary px-4" id="step3Next">Continue</button>
+                  <button type="button" class="btn btn-secondary prev-btn" data-step="2">
+                    <i class="fas fa-arrow-left btn-icon"></i> Back
+                  </button>
+                  <button type="button" class="btn btn-primary next-btn" data-step="2">
+                    Continue <i class="fas fa-arrow-right btn-icon"></i>
+                  </button>
                 </div>
               </div>
-              
-              <!-- Step 4: Review & Finish -->
-              <div id="step4" class="tab-pane fade">
-                <h4 class="mb-4">Review Your Team</h4>
-                <div class="alert alert-success mb-4">
-                  <i class="fas fa-check-circle me-2"></i> Your team setup is almost complete! Review the details below and finish the creation process.
+            </div>
+            
+            <!-- Step 3: Team Identity -->
+            <div class="step-content d-none" id="step-3">
+              <div class="card-header">
+                <h4 class="card-title">Team Identity</h4>
+                <p class="card-subtitle">Add visual elements and online presence to your team profile.</p>
+              </div>
+              <div class="card-body">
+                <!-- Team Logo -->
+                <div class="form-group text-center">
+                  <label class="form-label d-block text-center mb-3">Team Logo</label>
+                  
+                  <label for="teamLogo" class="logo-upload-label">
+                    <div class="logo-upload-container">
+                      <div id="logo-placeholder" class="logo-placeholder">
+                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                        <span class="upload-text">Upload Logo</span>
+                      </div>
+                      <img id="logo-preview" class="logo-preview" src="#" alt="Logo preview" style="display: none;">
+                    </div>
+                    <input type="file" class="custom-file-input @error('teamLogo') is-invalid @enderror" id="teamLogo" name="teamLogo" accept="image/*">
+                  </label>
+                  
+                  <div class="form-text text-center mt-2">Recommended: Square image, max 5MB</div>
+                  @error('teamLogo')
+                      <div class="invalid-feedback d-block">{{ $message }}</div>
+                  @enderror
                 </div>
                 
-                <div class="card h-100 mb-4">
-                  <div class="card-header bg-light">
-                    <h5 class="mb-0">Team Summary</h5>
-                  </div>
-                  <div class="card-body">
-                    <div class="d-flex mb-4">
-                      <div id="reviewLogo" style="width: 80px; height: 80px; background-color: #0d6efd; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold; margin-right: 15px;">
-                        TB
-                      </div>
-                      <div>
-                        <h4 class="mb-1" id="reviewTeamName">Team Name</h4>
-                        <div class="text-muted" id="reviewSportType">Basketball</div>
-                        <div class="small text-muted" id="reviewHomeVenue">Home Venue</div>
-                      </div>
-                    </div>
-                    
-                    <div class="team-summary-item d-flex align-items-center mb-3">
-                      <div class="summary-icon bg-light me-3 p-2 rounded">
-                        <i class="fas fa-users text-primary"></i>
-                      </div>
-                      <div>
-                        <div class="text-muted small">Team Size</div>
-                        <div id="reviewTeamSize">5 Players</div>
-                      </div>
-                    </div>
-                    
-                    <div class="team-summary-item d-flex align-items-center mb-3">
-                      <div class="summary-icon bg-light me-3 p-2 rounded">
-                        <i class="fas fa-building text-primary"></i>
-                      </div>
-                      <div>
-                        <div class="text-muted small">Home Venue</div>
-                        <div id="reviewVenue">Venue Name</div>
-                      </div>
-                    </div>
-                    
-                    <div class="team-summary-item d-flex align-items-center">
-                      <div class="summary-icon bg-light me-3 p-2 rounded">
-                        <i class="fas fa-bullhorn text-primary"></i>
-                      </div>
-                      <div>
-                        <div class="text-muted small">Team Motto</div>
-                        <div id="reviewMotto">Team Motto</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <!-- Social Media Links -->
+                <h5 class="mt-4 mb-3">Social Media Presence</h5>
                 
-                <div class="card mt-4">
-                  <div class="card-header bg-light">
-                    <h5 class="mb-0">Next Steps</h5>
+                <div class="form-group">
+                  <div class="social-input-group">
+                    <i class="fab fa-twitter social-icon twitter-text"></i>
+                    <input type="text" class="form-control social-input @error('twitterHandle') is-invalid @enderror" id="twitterHandle" name="twitterHandle" placeholder="Twitter handle (without @)" value="{{ old('twitterHandle') }}">
                   </div>
-                  <div class="card-body">
-                    <div class="row g-4">
-                      <div class="col-md-4">
-                        <div class="d-flex align-items-center mb-2">
-                          <div class="me-3 text-primary">
-                            <i class="fas fa-user-plus fa-2x"></i>
-                          </div>
-                          <h6 class="mb-0">Add Players</h6>
-                        </div>
-                        <p class="small text-muted">Start adding players to your roster with detailed profiles and statistics</p>
-                      </div>
-                      <div class="col-md-4">
-                        <div class="d-flex align-items-center mb-2">
-                          <div class="me-3 text-primary">
-                            <i class="fas fa-calendar-alt fa-2x"></i>
-                          </div>
-                          <h6 class="mb-0">Schedule Games</h6>
-                        </div>
-                        <p class="small text-muted">Create your season schedule with upcoming games and practice sessions</p>
-                      </div>
-                      <div class="col-md-4">
-                        <div class="d-flex align-items-center mb-2">
-                          <div class="me-3 text-primary">
-                            <i class="fas fa-chart-line fa-2x"></i>
-                          </div>
-                          <h6 class="mb-0">Track Stats</h6>
-                        </div>
-                        <p class="small text-muted">Record game statistics and track player development over time</p>
-                      </div>
-                    </div>
+                  
+                  <div class="social-input-group">
+                    <i class="fab fa-instagram social-icon instagram-text"></i>
+                    <input type="text" class="form-control social-input @error('instagramHandle') is-invalid @enderror" id="instagramHandle" name="instagramHandle" placeholder="Instagram handle (without @)" value="{{ old('instagramHandle') }}">
+                  </div>
+                  
+                  <div class="social-input-group">
+                    <i class="fab fa-facebook social-icon facebook-text"></i>
+                    <input type="text" class="form-control social-input @error('facebookPage') is-invalid @enderror" id="facebookPage" name="facebookPage" placeholder="Facebook page name" value="{{ old('facebookPage') }}">
                   </div>
                 </div>
                 
                 <div class="d-flex justify-content-between mt-4">
-                  <button type="button" class="btn btn-outline-secondary px-4" id="step4Prev">Back</button>
-                  <button type="submit" class="btn btn-success px-5" id="createTeamBtn">
-                    <i class="fas fa-check me-2"></i> Create Team
+                  <button type="button" class="btn btn-secondary prev-btn" data-step="3">
+                    <i class="fas fa-arrow-left btn-icon"></i> Back
+                  </button>
+                  <button type="button" class="btn btn-primary next-btn" data-step="3">
+                    Continue <i class="fas fa-arrow-right btn-icon"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Step 4: Review -->
+            <div class="step-content d-none" id="step-4">
+              <div class="card-header">
+                <h4 class="card-title">Review & Create Team</h4>
+                <p class="card-subtitle">Let's make sure everything looks right before finishing.</p>
+              </div>
+              <div class="card-body">
+                <!-- Team Profile Preview -->
+                <div class="team-profile">
+                  <div class="team-logo-large" id="review-logo-container">
+                    <span id="default-logo">T</span>
+                    <img id="custom-logo" src="#" alt="Team logo" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                  </div>
+                  <div class="team-info">
+                    <h3 id="review-team-name">Team Name</h3>
+                    <p id="review-sport"><i class="fas fa-basketball-ball info-icon"></i>Basketball</p>
+                    <p id="review-size"><i class="fas fa-users info-icon"></i><span id="team-size-value">10</span> Players</p>
+                    <p id="review-motto" class="team-motto" style="display: none;">"Team motto will appear here"</p>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <!-- Team Details Review -->
+                  <div class="col-md-6">
+                    <div class="review-section">
+                      <h6 class="review-header">Team Details</h6>
+                      <div class="review-content">
+                        <ul class="review-list">
+                          <li>
+                            <span class="review-list-label">Home Venue:</span>
+                            <span id="review-venue">Not specified</span>
+                          </li>
+                          <li>
+                            <span class="review-list-label">Founded:</span>
+                            <span id="review-founded">Not specified</span>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Social Media Review -->
+                  <div class="col-md-6">
+                    <div class="review-section">
+                      <h6 class="review-header">Social Media</h6>
+                      <div class="review-content">
+                        <ul class="review-list">
+                          <li class="social-review-item">
+                            <span class="social-review-icon twitter-bg"><i class="fab fa-twitter"></i></span>
+                            <span id="review-twitter">Not specified</span>
+                          </li>
+                          <li class="social-review-item">
+                            <span class="social-review-icon instagram-bg"><i class="fab fa-instagram"></i></span>
+                            <span id="review-instagram">Not specified</span>
+                          </li>
+                          <li class="social-review-item">
+                            <span class="social-review-icon facebook-bg"><i class="fab fa-facebook"></i></span>
+                            <span id="review-facebook">Not specified</span>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Team Description Review -->
+                <div class="review-section">
+                  <h6 class="review-header">Team Description</h6>
+                  <div class="review-content">
+                    <p id="review-description" class="mb-0">No description provided</p>
+                  </div>
+                </div>
+                
+                <div class="alert alert-info mt-4" style="border-radius: 8px; border-left: 4px solid var(--primary-color);">
+                  <i class="fas fa-info-circle me-2"></i> You'll be registered as the team captain. After creating your team, you can invite players to join.
+                </div>
+                
+                <div class="d-flex justify-content-between mt-4">
+                  <button type="button" class="btn btn-secondary prev-btn" data-step="4">
+                    <i class="fas fa-arrow-left btn-icon"></i> Back
+                  </button>
+                  <button type="submit" class="btn btn-success btn-lg">
+                    <i class="fas fa-check-circle me-2"></i> Create Team
                   </button>
                 </div>
               </div>
             </div>
           </form>
-        @endif
+        </div>
+        
+        <!-- Benefits Section -->
+        <div class="benefits-section">
+          <div class="row g-4">
+            <div class="col-md-4">
+              <div class="card benefit-card">
+                <div class="card-body text-center p-4">
+                  <div class="benefit-icon-wrapper">
+                    <i class="fas fa-users benefit-icon"></i>
+                  </div>
+                  <h5 class="benefit-title">Team Management</h5>
+                  <p class="benefit-text">Easily add players, assign roles, and keep everyone organized.</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card benefit-card">
+                <div class="card-body text-center p-4">
+                  <div class="benefit-icon-wrapper">
+                    <i class="fas fa-trophy benefit-icon"></i>
+                  </div>
+                  <h5 class="benefit-title">Join Tournaments</h5>
+                  <p class="benefit-text">Discover and register for competitions in your area.</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card benefit-card">
+                <div class="card-body text-center p-4">
+                  <div class="benefit-icon-wrapper">
+                    <i class="fas fa-calendar-check benefit-icon"></i>
+                  </div>
+                  <h5 class="benefit-title">Schedule Games</h5>
+                  <p class="benefit-text">Book venues and organize matches with other teams.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+  <!-- Team Status Modal -->
+  <div class="modal fade" id="teamStatusModal" tabindex="-1" aria-labelledby="teamStatusModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="border-radius: 12px; border: none; overflow: hidden;">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title" id="teamStatusModalLabel">Team Status</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div id="captain-message" style="display: none;">
+            <div class="text-center mb-4">
+              <div class="rounded-circle bg-primary bg-opacity-10 p-3 d-inline-flex mb-3">
+                <i class="fas fa-user-tie fa-3x text-primary"></i>
+              </div>
+              <h4>You're a Team Captain!</h4>
+            </div>
+            <p>You already have a team that you're managing. Would you like to:</p>
+            <div class="d-grid gap-2">
+              <a href="#" id="manage-team-link" class="btn btn-primary">
+                <i class="fas fa-cogs me-2"></i> Manage Your Team
+              </a>
+              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                <i class="fas fa-plus me-2"></i> Create Another Team
+              </button>
+            </div>
+          </div>
+          
+          <div id="member-message" style="display: none;">
+            <div class="text-center mb-4">
+              <div class="rounded-circle bg-primary bg-opacity-10 p-3 d-inline-flex mb-3">
+                <i class="fas fa-users fa-3x text-primary"></i>
+              </div>
+              <h4>You're Already on a Team!</h4>
+            </div>
+            <p>You're currently a member of a team. Would you like to:</p>
+            <div class="d-grid gap-2">
+              <a href="#" id="view-team-link" class="btn btn-primary">
+                <i class="fas fa-eye me-2"></i> View Your Team
+              </a>
+              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                <i class="fas fa-plus me-2"></i> Create a New Team
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.bundle.min.js"></script>
   <script>
- document.addEventListener('DOMContentLoaded', function() {
-  // Step navigation
-  const steps = document.querySelectorAll('.step');
-  const tabPanes = document.querySelectorAll('.tab-pane');
-
-  function updateStepIndicator(currentStep) {
-    steps.forEach((step, index) => {
-      step.classList.remove('active', 'completed');
-      if (index + 1 === currentStep) {
-        step.classList.add('active');
-      } else if (index + 1 < currentStep) {
-        step.classList.add('completed');
-      }
-    });
-  }
-  
-  function navigateToStep(currentStep, nextStep) {
-    // First remove active classes from current step
-    tabPanes[currentStep - 1].classList.remove('show', 'active');
-    // Then add active classes to next step
-    tabPanes[nextStep - 1].classList.add('show', 'active');
-    updateStepIndicator(nextStep);
-  }
-
-  // Step navigation handlers
-  const step1Next = document.getElementById('step1Next');
-  const step2Prev = document.getElementById('step2Prev');
-  const step2Next = document.getElementById('step2Next');
-  const step3Prev = document.getElementById('step3Prev');
-  const step3Next = document.getElementById('step3Next');
-  const step4Prev = document.getElementById('step4Prev');
-  
-  if (step1Next) step1Next.addEventListener('click', e => { e.preventDefault(); navigateToStep(1, 2); });
-  if (step2Prev) step2Prev.addEventListener('click', e => { e.preventDefault(); navigateToStep(2, 1); });
-  if (step2Next) step2Next.addEventListener('click', e => { 
-    e.preventDefault(); 
-    // Basic validation for step 2
-    const teamName = document.getElementById('teamName').value;
-    if (!teamName) {
-      alert('Team name is required!');
-      return;
-    }
-    navigateToStep(2, 3); 
-  });
-  if (step3Prev) step3Prev.addEventListener('click', e => { e.preventDefault(); navigateToStep(3, 2); });
-  if (step3Next) step3Next.addEventListener('click', e => { 
-    e.preventDefault(); 
-    updateReviewData();
-    navigateToStep(3, 4); 
-  });
-  if (step4Prev) step4Prev.addEventListener('click', e => { e.preventDefault(); navigateToStep(4, 3); });
-
-  // Sport selection
-  const sportCards = document.querySelectorAll('.sport-card');
-  if (sportCards) {
-    sportCards.forEach((card) => {
-      card.addEventListener('click', function() {
-        sportCards.forEach((c) => c.classList.remove('selected'));
-        this.classList.add('selected');
+    document.addEventListener('DOMContentLoaded', function() {
+      // Check if user already has a team and redirect accordingly
+      checkTeamStatus();
+      
+      // Set today's date as default for founding date
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('foundingDate').value = today;
+      
+      // Set Today button functionality
+      document.getElementById('setTodayBtn').addEventListener('click', function() {
+        document.getElementById('foundingDate').value = today;
+      });
+      
+      // Function to check team status and show appropriate content
+      function checkTeamStatus() {
+        // In a real implementation, this would be an AJAX call to the server
+        // For demonstration, we're using a simulated check with a timeout
         
-        // Update hidden sport type input
-        const sportTypeInput = document.getElementById('sportType');
-        if (sportTypeInput) {
-          sportTypeInput.value = this.dataset.sport;
+        // Check if there's a URL parameter to bypass the check (for testing)
+        const urlParams = new URLSearchParams(window.location.search);
+        const bypassCheck = urlParams.get('bypass_check');
+        
+        if (bypassCheck === 'true') {
+          document.getElementById('create-team-form-wrapper').style.display = 'block';
+          return; // Skip the check and show the form
         }
         
-        // Update review sport type
-        const reviewSportType = document.getElementById('reviewSportType');
-        if (reviewSportType) {
-          const sportTitle = this.querySelector('.card-title');
-          if (sportTitle) {
-            reviewSportType.textContent = sportTitle.textContent;
+        // Show loading spinner
+        document.getElementById('team-status-check').style.display = 'block';
+        document.getElementById('create-team-form-wrapper').style.display = 'none';
+        
+        // Simulate AJAX call (replace with real AJAX in production)
+        setTimeout(function() {
+          // This would be the server response
+          const userStatus = {
+            // Change these values for testing different scenarios
+            hasTeam: false,          // Set to true to simulate user already having a team
+            isCaptain: false,        // Set to true to simulate user being a team captain
+            teamId: 123              // This would be the team ID returned from the server
+          };
+          
+          if (userStatus.hasTeam) {
+            // Show the appropriate modal based on user status
+            if (userStatus.isCaptain) {
+              document.getElementById('captain-message').style.display = 'block';
+              document.getElementById('member-message').style.display = 'none';
+              document.getElementById('manage-team-link').href = '/teams/manage/' + userStatus.teamId;
+            } else {
+              document.getElementById('captain-message').style.display = 'none';
+              document.getElementById('member-message').style.display = 'block';
+              document.getElementById('view-team-link').href = '/teams/member/' + userStatus.teamId;
+            }
+            
+            // Show the modal
+            const teamStatusModal = new bootstrap.Modal(document.getElementById('teamStatusModal'));
+            teamStatusModal.show();
+            
+            // Hide loading spinner
+            document.getElementById('team-status-check').style.display = 'none';
+            document.getElementById('create-team-form-wrapper').style.display = 'block';
+          } else {
+            // User doesn't have a team, show the creation form
+            document.getElementById('team-status-check').style.display = 'none';
+            document.getElementById('create-team-form-wrapper').style.display = 'block';
           }
+        }, 1500); // Simulate 1.5 second delay for the check
+      }
+      
+      // Step navigation
+      const progressBar = document.getElementById('progress-bar');
+      const nextButtons = document.querySelectorAll('.next-btn');
+      const prevButtons = document.querySelectorAll('.prev-btn');
+      const stepButtons = document.querySelectorAll('.step-btn');
+      const stepContents = document.querySelectorAll('.step-content');
+      const stepIndicators = document.querySelectorAll('.step-indicator');
+      const stepLabels = document.querySelectorAll('.step-label');
+      
+      // Initialize form for validation
+      const form = document.getElementById('create-team-form');
+      
+      // Logo preview handling
+      const logoInput = document.getElementById('teamLogo');
+      const logoPreview = document.getElementById('logo-preview');
+      const logoPlaceholder = document.getElementById('logo-placeholder');
+      const customLogo = document.getElementById('custom-logo');
+      
+      // Handle next button clicks
+      nextButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          const currentStep = parseInt(this.getAttribute('data-step'));
+          const nextStep = currentStep + 1;
+          
+          // Simple form validation for required fields
+          if (currentStep === 1) {
+            const teamName = document.getElementById('teamName').value;
+            const sportType = document.getElementById('sportType').value;
+            const teamSize = document.getElementById('teamSize').value;
+            
+            if (!teamName || !sportType || !teamSize) {
+              alert('Please fill in all required fields');
+              return;
+            }
+          }
+          
+          // Update review info if going to step 4
+          if (nextStep === 4) {
+            updateReviewInfo();
+          }
+          
+          // Hide current step and show next
+          document.getElementById(`step-${currentStep}`).classList.add('d-none');
+          document.getElementById(`step-${nextStep}`).classList.remove('d-none');
+          
+          // Update progress bar and indicators
+          updateProgress(nextStep);
+        });
+      });
+      
+      // Handle previous button clicks
+      prevButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          const currentStep = parseInt(this.getAttribute('data-step'));
+          const prevStep = currentStep - 1;
+          
+          // Hide current step and show previous
+          document.getElementById(`step-${currentStep}`).classList.add('d-none');
+          document.getElementById(`step-${prevStep}`).classList.remove('d-none');
+          
+          // Update progress bar and indicators
+          updateProgress(prevStep);
+        });
+      });
+      
+      // Handle step indicator clicks
+      stepButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          const targetStep = parseInt(this.getAttribute('data-step'));
+          const currentStep = getCurrentStep();
+          
+          // Don't allow skipping ahead without completing previous steps
+          if (targetStep > currentStep) {
+            return;
+          }
+          
+          // Hide current step and show target
+          document.getElementById(`step-${currentStep}`).classList.add('d-none');
+          document.getElementById(`step-${targetStep}`).classList.remove('d-none');
+          
+          // Update progress bar and indicators
+          updateProgress(targetStep);
+        });
+      });
+      
+      // Function to update progress bar and indicators
+      function updateProgress(step) {
+        // Update progress bar - each step is 33.33% except the last
+        const progressPercentage = (step - 1) * 33.33;
+        progressBar.style.width = `${progressPercentage}%`;
+        
+        // Update step indicators
+        stepButtons.forEach((button, index) => {
+          const stepNum = index + 1;
+          
+          // Reset all buttons first
+          button.classList.remove('active', 'completed');
+          
+          if (stepNum === step) {
+            // Current step
+            button.classList.add('active');
+          } else if (stepNum < step) {
+            // Completed step
+            button.classList.add('completed');
+          }
+        });
+        
+        // Update step labels
+        stepLabels.forEach((label, index) => {
+          const stepNum = index + 1;
+          
+          // Reset all labels first
+          label.classList.remove('active', 'completed');
+          
+          if (stepNum === step) {
+            // Current step
+            label.classList.add('active');
+          } else if (stepNum < step) {
+            // Completed step
+            label.classList.add('completed');
+          }
+        });
+      }
+      
+      // Function to get current step
+      function getCurrentStep() {
+        for (let i = 0; i < stepContents.length; i++) {
+          if (!stepContents[i].classList.contains('d-none')) {
+            return i + 1;
+          }
+        }
+        return 1;
+      }
+      
+      // Handle logo preview
+      logoInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+          const reader = new FileReader();
+          
+          reader.onload = function(e) {
+            logoPreview.src = e.target.result;
+            logoPreview.style.display = 'block';
+            logoPlaceholder.style.display = 'none';
+            
+            // Update the review logo as well
+            customLogo.src = e.target.result;
+            customLogo.style.display = 'block';
+            document.getElementById('default-logo').style.display = 'none';
+          }
+          
+          reader.readAsDataURL(this.files[0]);
         }
       });
-    });
-  }
-  
-  // Logo upload handling
-  const logoInput = document.getElementById('teamLogo');
-  const uploadLogoBtn = document.getElementById('uploadLogoBtn');
-  const logoPreview = document.getElementById('logoPreview');
-  
-  if (uploadLogoBtn && logoInput) {
-    uploadLogoBtn.addEventListener('click', function() {
-      logoInput.click();
-    });
-  }
-  
-  if (logoInput && logoPreview) {
-    logoInput.addEventListener('change', function() {
-      if (this.files && this.files[0]) {
-        const reader = new FileReader();
+      
+      // Function to update review info
+      function updateReviewInfo() {
+        const teamName = document.getElementById('teamName').value;
+        const sportType = document.getElementById('sportType').value;
+        const teamSize = document.getElementById('teamSize').value;
+        const teamMotto = document.getElementById('teamMotto').value;
+        const teamDescription = document.getElementById('teamDescription').value;
+        const homeVenue = document.getElementById('homeVenue').value;
+        const foundingDate = document.getElementById('foundingDate').value;
+        const twitterHandle = document.getElementById('twitterHandle').value;
+        const instagramHandle = document.getElementById('instagramHandle').value;
+        const facebookPage = document.getElementById('facebookPage').value;
         
-        reader.onload = function(e) {
-          // Clear existing content
-          logoPreview.innerHTML = '';
-          
-          // Create image element
-          const img = document.createElement('img');
-          img.src = e.target.result;
-          img.style.width = '100%';
-          img.style.height = '100%';
-          img.style.objectFit = 'cover';
-          logoPreview.appendChild(img);
-          
-          // Update review logo
-          const reviewLogo = document.getElementById('reviewLogo');
-          if (reviewLogo) {
-            reviewLogo.innerHTML = '';
-            const reviewImg = document.createElement('img');
-            reviewImg.src = e.target.result;
-            reviewImg.style.width = '100%';
-            reviewImg.style.height = '100%';
-            reviewImg.style.objectFit = 'cover';
-            reviewImg.style.borderRadius = '50%';
-            reviewLogo.appendChild(reviewImg);
-          }
-        };
+        // Update team name, sport type, and size
+        document.getElementById('review-team-name').textContent = teamName || 'Team Name';
         
-        reader.readAsDataURL(this.files[0]);
+        // Update sport icon and text
+        let sportIcon = 'basketball-ball';
+        let sportText = 'Basketball';
+        
+        if (sportType === 'football') {
+          sportIcon = 'futbol';
+          sportText = 'Football';
+        } else if (sportType === 'tennis') {
+          sportIcon = 'table-tennis';
+          sportText = 'Tennis';
+        } else if (sportType === 'volleyball') {
+          sportIcon = 'volleyball-ball';
+          sportText = 'Volleyball';
+        }
+        
+        document.getElementById('review-sport').innerHTML = `<i class="fas fa-${sportIcon} info-icon"></i>${sportText}`;
+        
+        // Update team size
+        document.getElementById('team-size-value').textContent = teamSize || '0';
+        
+        // Update team motto if provided
+        if (teamMotto) {
+          document.getElementById('review-motto').textContent = `"${teamMotto}"`;
+          document.getElementById('review-motto').style.display = 'block';
+        } else {
+          document.getElementById('review-motto').style.display = 'none';
+        }
+        
+        // Update home venue
+        document.getElementById('review-venue').textContent = homeVenue || 'Not specified';
+        
+        // Update founding date
+        if (foundingDate) {
+          const formattedDate = new Date(foundingDate).toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          });
+          document.getElementById('review-founded').textContent = formattedDate;
+        } else {
+          document.getElementById('review-founded').textContent = 'Not specified';
+        }
+        
+        // Update social media
+        document.getElementById('review-twitter').textContent = twitterHandle || 'Not specified';
+        document.getElementById('review-instagram').textContent = instagramHandle || 'Not specified';
+        document.getElementById('review-facebook').textContent = facebookPage || 'Not specified';
+        
+        // Update description
+        document.getElementById('review-description').textContent = teamDescription || 'No description provided';
+        
+        // Update default logo (first letter of team name)
+        if (!logoInput.files || !logoInput.files[0]) {
+          document.getElementById('default-logo').textContent = teamName ? teamName.charAt(0).toUpperCase() : 'T';
+          document.getElementById('default-logo').style.display = 'block';
+          document.getElementById('custom-logo').style.display = 'none';
+        }
       }
     });
-  }
-  
-  // Update review data when going to step 4
-  function updateReviewData() {
-    const teamNameInput = document.getElementById('teamName');
-    const teamSizeInput = document.getElementById('teamSize');
-    const homeVenueInput = document.getElementById('homeVenue');
-    const teamMottoInput = document.getElementById('teamMotto');
-    
-    const teamName = teamNameInput ? teamNameInput.value : '';
-    const teamSize = teamSizeInput ? teamSizeInput.value : '5';
-    const homeVenue = homeVenueInput ? homeVenueInput.value : '';
-    const teamMotto = teamMottoInput ? teamMottoInput.value : '';
-    
-    // Update review screen with collected data
-    const reviewTeamName = document.getElementById('reviewTeamName');
-    const reviewTeamSize = document.getElementById('reviewTeamSize');
-    const reviewVenue = document.getElementById('reviewVenue');
-    const reviewMotto = document.getElementById('reviewMotto');
-    
-    if (reviewTeamName) reviewTeamName.textContent = teamName || 'Team Name';
-    if (reviewTeamSize) reviewTeamSize.textContent = teamSize + ' Players';
-    if (reviewVenue) reviewVenue.textContent = homeVenue || 'Not specified';
-    if (reviewMotto) reviewMotto.textContent = teamMotto || 'No motto specified';
-  }
-  
-  // Form validation before submission
-  const teamForm = document.getElementById('teamCreationForm');
-  const createTeamBtn = document.getElementById('createTeamBtn');
-  
-  if (createTeamBtn && teamForm) {
-    teamForm.addEventListener('submit', function(e) {
-      // Prevent the default form submission
-      e.preventDefault();
-      
-      // Basic form validation
-      const teamName = document.getElementById('teamName').value;
-      if (!teamName) {
-        alert('Team name is required!');
-        navigateToStep(4, 2); // Go back to team details step
-        return false;
-      }
-      
-      // If validation passes, submit the form
-      this.submit();
-    });
-  }
-  
-  // Initialize the first step
-  updateStepIndicator(1);
-});
-    </script>
+  </script>
 </body>
-</html>  
+</html>

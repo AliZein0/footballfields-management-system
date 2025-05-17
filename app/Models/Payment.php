@@ -29,7 +29,7 @@ class Payment extends Model
      */
     public function booking()
     {
-        return $this->belongsTo(Booking::class);
+        return $this->belongsTo(Booking::class , 'booking_id');
     }
     
     /**
@@ -39,4 +39,11 @@ class Payment extends Model
     {
         return $this->website_fee + $this->field_fee;
     }
+
+        public function admin()
+    {
+        return $this->belongsTo(User::class, 'admin_id');
+    }
+
+
 }

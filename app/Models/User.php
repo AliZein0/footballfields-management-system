@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
 class User extends Authenticatable
@@ -46,6 +47,7 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'preferred_sports' => 'array',
     ];
 
     /**
@@ -55,7 +57,7 @@ class User extends Authenticatable
      */
     public function player(): HasOne 
     {
-        return $this->hasOne(Player::class, 'id');
+        return $this->hasOne(Player::class, 'id', 'id');
     }
 
     /**
@@ -68,11 +70,21 @@ class User extends Authenticatable
         return $this->hasOneThrough(
             Team::class,
             Player::class,
-            'id', // Foreign key on players table
-            'id',      // Foreign key on teams table
+            'id',      // Foreign key on players table (matching user id)
+            'id',      // Primary key on teams table
             'id',      // Local key on users table
-            'team_id'  // Local key on players table
+            'team_id'  // Foreign key on players table referencing teams
         );
+    }
+
+    /**
+     * Get the user's role.
+     * 
+     * @return BelongsTo
+     */
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(Role::class);
     }
 
     /**
@@ -82,7 +94,7 @@ class User extends Authenticatable
      */
     public function hasTeam(): bool
     {
-        return $this->player && $this->player->team_id;
+        return $this->player && $this->player->team_id !== null;
     }
 
     /**
@@ -92,11 +104,74 @@ class User extends Authenticatable
      */
     public function isCaptainOfCurrentTeam(): bool
     {
-        // Check if user has a team and is the captain of that team
-        if ($this->hasTeam() && $this->team) {
-            return $this->id === $this->team->captain_id;
-        }
-        
-        return false;
+        return $this->hasTeam() && $this->team && $this->id === $this->team->captain_id;
+    }
+
+    /**
+     * Check if the user has a specific role.
+     * 
+     * @param string $roleName
+     * @return bool
+     */
+    public function hasRole(string $roleName): bool
+    {
+        return $this->role && $this->role->name === $roleName;
+    }
+
+    /**
+     * Scope a query to only include users with a specific role.
+     * 
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param string $roleName
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeWithRole($query, string $roleName)
+    {
+        return $query->whereHas('role', function($q) use ($roleName) {
+            $q->where('name', $roleName);
+        });
+    }
+
+    /**
+     * Scope a query to only include users on a team.
+     * 
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeOnTeam($query)
+    {
+        return $query->whereHas('player', function($q) {
+            $q->whereNotNull('team_id');
+        });
+    }
+
+    /**
+     * Scope a query to only include team captains.
+     * 
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeCaptains($query)
+    {
+        return $query->whereHas('team', function($q) {
+            $q->where('captain_id', 'users.id');
+        });
+    }
+
+    /**
+     * Get the tournaments the user's team is participating in.
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasManyThrough
+     */
+    public function tournaments()
+    {
+        return $this->hasManyThrough(
+            Tournament::class,
+            Team::class,
+            'captain_id',  // Foreign key on teams table
+            'id',          // Primary key on tournaments table
+            'id',          // Local key on users table
+            'id'           // Local key on teams table
+        )->with('pivot');
     }
 }
