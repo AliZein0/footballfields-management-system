@@ -1,9 +1,10 @@
 <x-layout title="Bookings History">
-    <div class="app-container">
-        <div class="app-header">
-            <h1 class="app-title">My Bookings</h1>
-            <p class="text-secondary">Track and manage all your field reservations in one place</p>
-        </div>
+    <x-player_header />
+
+    <div class="main">
+    
+        <section class="title mt-5">
+            
         
         <!-- Stats cards -->
         <div class="stats-row">
@@ -302,7 +303,9 @@
         </div>
     </div>
 
+    </div>
     
+    </section>
     <style>
         /* Bookings History Styles */
         :root {

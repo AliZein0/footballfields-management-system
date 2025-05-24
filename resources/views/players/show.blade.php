@@ -1,4 +1,13 @@
 <x-layout title="Player Details - {{ $player->user->name }}">
+    <x-player_header />
+    <div class="main">
+        <section class="title mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <h1 class="mt-4">Player Details</h1>
+                    
+    
     <div class="container py-4">
         <!-- Breadcrumb -->
         <nav aria-label="breadcrumb" class="mb-4">
@@ -114,10 +123,7 @@
                                 <span>Bookings</span>
                                 <span class="badge bg-primary rounded-pill">{{ isset($player->upcomingBookings) ? count($player->upcomingBookings) : 0 }}</span>
                             </li>
-                            <li class="list-group-item d-flex justify-content-between px-0">
-                                <span>Favorite Venues</span>
-                                <span class="badge bg-primary rounded-pill">{{ isset($player->favoriteVenues) ? count($player->favoriteVenues) : 0 }}</span>
-                            </li>
+                            
                             <li class="list-group-item d-flex justify-content-between px-0">
                                 <span>Team Membership</span>
                                 <span class="text-success">Active</span>
@@ -143,7 +149,8 @@
             </div>
         </div>
     </div>
-
+</section>
+</div>
     <script>
         // Confirm remove player
         document.querySelectorAll('.delete-player-form').forEach(form => {
@@ -155,4 +162,5 @@
             });
         });
     </script>
+
 </x-layout>

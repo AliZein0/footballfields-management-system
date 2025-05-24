@@ -1,4 +1,4 @@
-<header id="header" class="header fixed-top ">
+<header id="header" class="header fixed-top">
     <div class="container">
         <div class="header-container">
             <div class="logo">
@@ -15,7 +15,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{{route('bookings.history')}}" class="nav-link ">
+                        <a href="{{route('bookings.history')}}" class="nav-link {{ Route::currentRouteName() == 'bookings.history' ? 'active' : '' }}">
                             <i class="fas fa-calendar-check"></i> My Bookings
                         </a>
                     </li>
@@ -209,7 +209,12 @@
     padding: 0;
     transition: all 0.3s ease;
     z-index: 997;
+    margin-bottom: 20px;
+    position: fixed;
+    top: 0;
+    
 }
+
 
 .header-container {
     display: flex;
@@ -517,6 +522,7 @@
         z-index: 995;
         box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
     }
+    
     
     .main-nav.active {
         left: 0;

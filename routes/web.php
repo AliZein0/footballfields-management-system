@@ -7,7 +7,7 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\VerificationController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\PlayerController;
-use App\Http\Controllers\SportFieldController;
+use App\Http\Controllers\PlayerSportFieldController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\HomeController;
 use App\Http\Middleware\StoreUserSession;
@@ -23,9 +23,9 @@ use App\Http\Controllers\Admin\AdminBookingController;
 
 
 // Public Routes (no authentication required)
-Route::get('/fields/search', [SportFieldController::class, 'search'])->name('fields.search');
+Route::get('/fields/search', [PlayerSportFieldController::class, 'search'])->name('fields.search');
 // Add this at the top of your routes file
-Route::get('/fields/all', [SportFieldController::class, 'allFields'])->name('fields.all');
+Route::get('/fields/all', [PlayerSportFieldController::class, 'allFields'])->name('fields.all');
 // Authentication Routes
 Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('login', [LoginController::class, 'login']);
@@ -126,6 +126,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/teams/{team}/players/{player}', [TeamController::class, 'showPlayer'])->name('teams.players.show');
     Route::delete('/teams/{team}/players/{player}', [TeamController::class, 'removePlayer'])->name('teams.players.remove');
     Route::post('/teams/{team}/leave', [TeamController::class, 'leaveTeam'])->name('teams.leave');
+      Route::get('/teams/{team}/matches', [TeamController::class, 'showMatches'])->name('teams.matches');
+    
+    // Optional: If you want to allow viewing matches without specifying team ID
+    // (will show current user's team matches)
+   
 });
 
 

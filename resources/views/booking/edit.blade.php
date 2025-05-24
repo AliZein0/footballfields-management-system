@@ -1,644 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Edit Booking - {{ $booking->sportfield->name}}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --primary-color: #2563eb;
-            --secondary-color: #0f172a;
-            --success-color: #059669;
-            --danger-color: #e11d48;
-            --warning-color: #f59e0b;
-            --info-color: #0284c7;
-            --light-bg: #f8fafc;
-            --card-bg: #ffffff;
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-            --border-radius: 12px;
-            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-
-        body {
-            background: var(--light-bg);
-            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-            color: var(--text-primary);
-            line-height: 1.6;
-        }
-
-        .app-container {
-            max-width: 1340px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .app-header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        .app-title {
-            font-weight: 800;
-            font-size: 2.2rem;
-            color: var(--secondary-color);
-            margin-bottom: 0.5rem;
-            position: relative;
-            display: inline-block;
-        }
-
-        .app-title:after {
-            content: '';
-            position: absolute;
-            width: 60px;
-            height: 4px;
-            background: var(--primary-color);
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            border-radius: 2px;
-        }
-
-        .card {
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            border: none;
-            box-shadow: var(--shadow);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            margin-bottom: 1.5rem;
-            overflow: hidden;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-
-        .card-header {
-            background-color: var(--card-bg);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-            padding: 1.25rem 1.5rem;
-            font-weight: 700;
-            color: var(--secondary-color);
-            display: flex;
-            align-items: center;
-        }
-
-        .card-header i {
-            margin-right: 0.75rem;
-            color: var(--primary-color);
-            font-size: 1.25rem;
-        }
-
-        .card-body {
-            padding: 1.5rem;
-        }
-
-        /* Duration selector styles */
-        .duration-selector {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 1.5rem;
-        }
-
-        .duration-item {
-            flex: 1;
-            text-align: center;
-            padding: 0.75rem;
-            background: #f1f5f9;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-        }
-
-        .duration-item:hover {
-            background: #e2e8f0;
-        }
-
-        .duration-item.active {
-            background: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-        }
-
-        .duration-value {
-            font-weight: 700;
-            font-size: 1.25rem;
-            display: block;
-        }
-
-        .duration-label {
-            font-size: 0.75rem;
-            margin-top: 0.25rem;
-            display: block;
-        }
-
-        /* Field details styles */
-        .field-image-container {
-            position: relative;
-            height: 200px;
-            overflow: hidden;
-            border-radius: var(--border-radius) var(--border-radius) 0 0;
-        }
-
-        .field-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .field-badge {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background-color: var(--primary-color);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 50px;
-            font-weight: 600;
-            z-index: 2;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Status badge styles */
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.25rem 0.75rem;
-            border-radius: 50px;
-            font-weight: 600;
-            font-size: 0.875rem;
-        }
-
-        .status-badge.confirmed {
-            background-color: #ecfdf5;
-            color: var(--success-color);
-        }
-
-        .status-badge.pending {
-            background-color: #fff7ed;
-            color: var(--warning-color);
-        }
-
-        .status-badge.cancelled {
-            background-color: #fee2e2;
-            color: var(--danger-color);
-        }
-
-        .status-badge i {
-            margin-right: 0.5rem;
-        }
-
-        /* Slots grid */
-        .slots-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 10px;
-            margin-top: 0.5rem;
-        }
-
-        .slot-item {
-            background: #f8fafc;
-            border: 2px solid #e2e8f0;
-            border-radius: var(--border-radius);
-            padding: 0.75rem 0.5rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .slot-item:hover {
-            border-color: var(--primary-color);
-            transform: translateY(-3px);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .slot-item.available {
-            border-color: #e2e8f0;
-            color: var(--text-primary);
-        }
-
-        .slot-item.selected {
-            background: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-        }
-
-        .slot-item.booked {
-            background: #fee2e2;
-            border-color: #fecaca;
-            color: #ef4444;
-            cursor: not-allowed;
-            opacity: 0.8;
-        }
-
-        .slot-item.current {
-            border: 2px dashed var(--warning-color);
-            background: #fffbeb;
-        }
-
-        .slot-time {
-            font-weight: 600;
-            display: block;
-            margin-bottom: 0.25rem;
-            font-size: 0.875rem;
-        }
-
-        .slot-status {
-            font-size: 0.75rem;
-            display: block;
-            font-weight: 500;
-        }
-
-        .slot-item.available .slot-status {
-            color: var(--success-color);
-        }
-
-        .slot-item.booked .slot-status {
-            color: var(--danger-color);
-        }
-
-        .slot-item.current .slot-status {
-            color: var(--warning-color);
-        }
-
-        .slot-item.selected .slot-time,
-        .slot-item.selected .slot-status {
-            color: white;
-        }
-
-        /* Edit booking specific styles */
-        .booking-details {
-            background: #f8fafc;
-            border-radius: var(--border-radius);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            border: 1px solid #e2e8f0;
-        }
-
-        .booking-details-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.75rem 0;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        }
-
-        .booking-details-item:last-child {
-            border-bottom: none;
-        }
-
-        .booking-details-label {
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-
-        .booking-details-value {
-            font-weight: 600;
-            text-align: right;
-        }
-
-        .btn-outline-warning {
-            color: var(--warning-color);
-            border-color: var(--warning-color);
-        }
-
-        .btn-outline-warning:hover {
-            background-color: var(--warning-color);
-            color: white;
-        }
-
-        .btn-outline-danger {
-            color: var(--danger-color);
-            border-color: var(--danger-color);
-        }
-
-        .btn-outline-danger:hover {
-            background-color: var(--danger-color);
-            color: white;
-        }
-
-        .booking-reference {
-            background: #f0f9ff;
-            border-radius: var(--border-radius);
-            padding: 0.75rem 1rem;
-            border-left: 4px solid var(--info-color);
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-        }
-
-        .edit-section {
-            background: #f8fafc;
-            border-radius: var(--border-radius);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            border: 1px solid #e2e8f0;
-        }
-
-        .edit-section-header {
-            font-weight: 700;
-            color: var(--secondary-color);
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-        }
-
-        .edit-section-header i {
-            color: var(--primary-color);
-            margin-right: 0.75rem;
-        }
-
-        /* Flatpickr styles */
-        .flatpickr-calendar {
-            box-shadow: var(--shadow) !important;
-            border-radius: var(--border-radius) !important;
-            border: none !important;
-            margin-top: 0.5rem;
-        }
-
-        .flatpickr-day {
-            border-radius: 50%;
-            transition: all 0.2s ease;
-        }
-
-        .flatpickr-day.selected, 
-        .flatpickr-day.startRange, 
-        .flatpickr-day.endRange, 
-        .flatpickr-day.selected.inRange, 
-        .flatpickr-day.startRange.inRange, 
-        .flatpickr-day.endRange.inRange, 
-        .flatpickr-day.selected:focus, 
-        .flatpickr-day.startRange:focus, 
-        .flatpickr-day.endRange:focus, 
-        .flatpickr-day.selected:hover, 
-        .flatpickr-day.startRange:hover, 
-        .flatpickr-day.endRange:hover, 
-        .flatpickr-day.selected.prevMonthDay, 
-        .flatpickr-day.startRange.prevMonthDay, 
-        .flatpickr-day.endRange.prevMonthDay, 
-        .flatpickr-day.selected.nextMonthDay, 
-        .flatpickr-day.startRange.nextMonthDay, 
-        .flatpickr-day.endRange.nextMonthDay {
-            background: var(--primary-color);
-            border-color: var(--primary-color);
-            color: white;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .flatpickr-day.today {
-            border-color: var(--primary-color);
-        }
-
-        /* Alert styles */
-        .alert {
-            border-radius: var(--border-radius);
-            padding: 1rem;
-            margin-bottom: 1rem;
-            border: none;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        }
-
-        .alert-info {
-            background-color: #f0f9ff;
-            color: var(--info-color);
-            border-left: 4px solid var(--info-color);
-        }
-
-        .alert-warning {
-            background-color: #fff7ed;
-            color: #b45309;
-            border-left: 4px solid var(--warning-color);
-        }
-
-        .alert-success {
-            background-color: #ecfdf5;
-            color: #065f46;
-            border-left: 4px solid var(--success-color);
-        }
-
-        .alert-danger {
-            background-color: #fee2e2;
-            color: #b91c1c;
-            border-left: 4px solid var(--danger-color);
-        }
-
-        /* Comparison table */
-        .comparison-table {
-            width: 100%;
-            border-radius: var(--border-radius);
-            overflow: hidden;
-            border-collapse: collapse;
-            margin-bottom: 1.5rem;
-        }
-
-        .comparison-table th,
-        .comparison-table td {
-            padding: 1rem;
-            text-align: left;
-        }
-
-        .comparison-table th {
-            background-color: #f8fafc;
-            font-weight: 600;
-            color: var(--secondary-color);
-        }
-
-        .comparison-table td {
-            border-top: 1px solid #e2e8f0;
-        }
-
-        .comparison-table .old-value {
-            text-decoration: line-through;
-            color: var(--text-secondary);
-        }
-
-        .comparison-table .new-value {
-            color: var(--primary-color);
-            font-weight: 600;
-        }
-
-        /* Button styles */
-        .btn-primary {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-            padding: 0.75rem 1.5rem;
-            font-weight: 600;
-            border-radius: 50px;
-            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
-            transition: all 0.3s ease;
-        }
-
-        .btn-primary:hover, .btn-primary:focus {
-            background-color: #1d4ed8;
-            border-color: #1d4ed8;
-            box-shadow: 0 10px 15px rgba(37, 99, 235, 0.3);
-            transform: translateY(-2px);
-        }
-
-        .btn-success {
-            background-color: var(--success-color);
-            border-color: var(--success-color);
-            padding: 0.75rem 1.5rem;
-            font-weight: 600;
-            border-radius: 50px;
-            box-shadow: 0 4px 6px rgba(5, 150, 105, 0.2);
-            transition: all 0.3s ease;
-        }
-
-        .btn-success:hover, .btn-success:focus {
-            background-color: #047857;
-            border-color: #047857;
-            box-shadow: 0 10px 15px rgba(5, 150, 105, 0.3);
-            transform: translateY(-2px);
-        }
-
-        /* Responsive styles */
-        @media (max-width: 768px) {
-            .slots-grid {
-                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            }
-
-            .duration-selector {
-                flex-direction: column;
-            }
-        }
-
-        /* Toggle switch */
-        .form-switch {
-            padding-left: 2.5em;
-        }
-
-        .form-switch .form-check-input {
-            width: 2em;
-            margin-left: -2.5em;
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgba%280, 0, 0, 0.25%29'/%3e%3c/svg%3e");
-            background-position: left center;
-            border-radius: 2em;
-            transition: background-position 0.15s ease-in-out;
-        }
-
-        .form-switch .form-check-input:checked {
-            background-position: right center;
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");
-        }
-
-        /* Slots loader */
-        .slots-loader {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 2rem;
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(255, 255, 255, 0.8);
-            z-index: 5;
-            border-radius: var(--border-radius);
-        }
-
-        .slots-loader-spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(37, 99, 235, 0.2);
-            border-left-color: var(--primary-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
-</head>
-<body>
-    <div class="app-container">
+<x-layout title="Bookings History">
+    <link rel="stylesheet" href="{{ asset('css/booking.css') }}">
+    <x-player_header />
+    <div class="main">
+    <section class="mt-5">
+    
         <div class="app-header">
             <h1 class="app-title">Edit Booking</h1>
-            <p class="text-secondary">Modify your reservation for {{ $booking->sportfield->name}}</p>
-        </div>
+           </div>
 
-        <!-- Booking Reference -->
-        <div class="booking-reference">
-            <i class="fas fa-receipt me-2"></i>
-            Booking Reference: <span>{{ $booking->reference }}</span>
-        </div>
-
-        <!-- Booking Field Overview -->
-        <div class="row mb-4">
-            <div class="col-lg-12">
-                <div class="card">
-                    <div class="field-image-container">
-                        @if($booking->sportfield->is_covered)
-                            <div class="field-badge">
-                                <i class="fas fa-umbrella"></i> Covered
-                            </div>
-                        @endif
-
-                        @if($booking->sportfield->images->isEmpty())
-                            <img src="{{ asset('images/default.jpg') }}" class="field-image" alt="{{ $booking->sportfield->name }}">
-                        @else
-                            <img src="{{ asset($booking->sportfield->images[0]) }}" class="field-image" alt="{{ $booking->sportfield->name }}">
-                        @endif
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <h5>{{ $booking->sportfield->name }}</h5>
-                                <div class="d-flex align-items-center mb-2">
-                                    <i class="fas fa-futbol text-primary me-2"></i>
-                                    <span>{{ $booking->sportfield->type }}</span>
-                                </div>
-                                <div class="d-flex align-items-center mb-2">
-                                    <i class="fas fa-map-marker-alt text-primary me-2"></i>
-                                    <span>{{ $booking->sportfield->location }}</span>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="d-flex flex-column justify-content-center h-100">
-                                    <div class="mb-2 text-muted">
-                                        <i class="fas fa-tag me-2"></i>
-                                        <span>${{ number_format($booking->sportfield->fees, 2) }}/hour</span>
-                                    </div>
-                                    <div class="text-warning">
-                                        @for($i = 0; $i < $booking->sportfield->rating; $i++)
-                                            <i class="fas fa-star"></i>
-                                        @endfor
-                                        @for($i = $booking->sportfield->rating; $i < 5; $i++)
-                                            <i class="far fa-star"></i>
-                                        @endfor
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="d-flex flex-column justify-content-center align-items-end h-100">
-                                    <div class="status-badge {{ strtolower($booking->status) }}">
-                                        @if($booking->status == 'confirmed')
-                                            <i class="fas fa-check-circle"></i>
-                                        @elseif($booking->status == 'pending')
-                                            <i class="fas fa-clock"></i>
-                                        @elseif($booking->status == 'cancelled')
-                                            <i class="fas fa-ban"></i>
-                                        @endif
-                                        {{ ucfirst($booking->status) }}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+  
 
         <!-- Current Booking Details -->
 <div class="row mb-4">
@@ -984,11 +354,290 @@
             </div>
         </div>
     </div>
+    </section>
+    <style>
+/* ===== EDIT BOOKING PAGE SPECIFIC STYLES - edit-booking.css ===== */
+
+/* ===== FIELD OVERVIEW FOR EDIT PAGE ===== */
+.field-image-container {
+    height: 200px; /* Edit page has shorter field images */
+}
+
+/* ===== BOOKING REFERENCE BAR ===== */
+.booking-reference {
+    background: #f0f9ff;
+    border-radius: var(--border-radius);
+    padding: 0.75rem 1rem;
+    border-left: 4px solid var(--info-color);
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+}
+
+/* ===== BOOKING DETAILS GRID ===== */
+.booking-details {
+    background: #f8fafc;
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid #e2e8f0;
+}
+
+.booking-details-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.booking-details-item:last-child {
+    border-bottom: none;
+}
+
+.booking-details-label {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.booking-details-value {
+    font-weight: 600;
+    text-align: right;
+}
+
+/* ===== CURRENT SLOT STYLING ===== */
+.slot-item.current {
+    border: 2px dashed var(--warning-color);
+    background: #fffbeb;
+}
+
+.slot-item.current .slot-status {
+    color: var(--warning-color);
+}
+
+/* ===== CHANGES SUMMARY SECTION ===== */
+#changesSummary {
+    display: none; /* Initially hidden until changes are made */
+}
+
+.comparison-table {
+    width: 100%;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    border-collapse: collapse;
+    margin-bottom: 1.5rem;
+}
+
+.comparison-table th,
+.comparison-table td {
+    padding: 1rem;
+    text-align: left;
+}
+
+.comparison-table th {
+    background-color: #f8fafc;
+    font-weight: 600;
+    color: var(--secondary-color);
+}
+
+.comparison-table td {
+    border-top: 1px solid #e2e8f0;
+}
+
+.comparison-table .old-value {
+    text-decoration: line-through;
+    color: var(--text-secondary);
+}
+
+.comparison-table .new-value {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+/* ===== PRICE DIFFERENCE ALERTS ===== */
+#priceDifferenceAlert {
+    display: none; /* Initially hidden */
+}
+
+#priceDifferenceAlert.alert-warning {
+    background-color: #fff7ed;
+    border-left: 4px solid var(--warning-color);
+}
+
+#priceDifferenceAlert.alert-info {
+    background-color: #f0f9ff;
+    border-left: 4px solid var(--info-color);
+}
+
+/* ===== FORM TOGGLE SWITCHES ===== */
+.form-switch {
+    padding-left: 2.5em;
+}
+
+.form-switch .form-check-input {
+    width: 2em;
+    margin-left: -2.5em;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgba%280, 0, 0, 0.25%29'/%3e%3c/svg%3e");
+    background-position: left center;
+    border-radius: 2em;
+    transition: background-position 0.15s ease-in-out;
+}
+
+.form-switch .form-check-input:checked {
+    background-position: right center;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");
+}
+
+/* ===== FORM ACTIONS LAYOUT ===== */
+.d-flex.justify-content-between {
+    align-items: center;
+}
+
+.d-flex.justify-content-between .btn {
+    margin-left: 0.5rem;
+}
+
+.d-flex.justify-content-between .btn:first-child {
+    margin-left: 0;
+}
+
+/* ===== MODAL OVERRIDES ===== */
+.modal-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.modal-footer {
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.modal-title i {
+    color: var(--danger-color);
+}
+
+/* ===== EDIT-SPECIFIC ALERTS ===== */
+.alert.alert-info {
+    background-color: #f0f9ff;
+    color: var(--info-color);
+    border-left: 4px solid var(--info-color);
+}
+
+.alert.alert-warning {
+    background-color: #fff7ed;
+    color: #b45309;
+    border-left: 4px solid var(--warning-color);
+}
+
+/* ===== RESPONSIVE OVERRIDES FOR EDIT BOOKING ===== */
+@media (max-width: 768px) {
+    .comparison-table {
+        font-size: 0.875rem;
+    }
+    
+    .comparison-table th,
+    .comparison-table td {
+        padding: 0.5rem;
+    }
+    
+    .booking-details-item {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    .booking-details-value {
+        text-align: left;
+    }
+    
+    .d-flex.justify-content-between {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .field-image-container {
+        height: 180px;
+    }
+}
+/* Loading Overlay Styles */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+    margin-bottom: 20px;
+}
+
+.loading-message {
+    color: white;
+    font-size: 18px;
+    font-weight: 500;
+    text-align: center;
+    max-width: 80%;
+    padding: 10px 15px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 5px;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Error and Success Alerts */
+.alert-success, .alert-danger {
+    animation: fadeIn 0.5s;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Form Validation Feedback */
+.is-invalid {
+    border-color: var(--danger-color) !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%23dc3545' viewBox='0 0 12 12'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+}
+
+.invalid-feedback {
+    display: none;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 80%;
+    color: var(--danger-color);
+}
+
+.was-validated .form-control:invalid ~ .invalid-feedback,
+.form-control.is-invalid ~ .invalid-feedback {
+    display: block;
+}
+    </style>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script>
-   // Booking data from backend
+    <script>// Booking data from backend
 const booking = @json($booking);
 const field = @json($booking->sportfield);
 const hourlyRate = parseFloat("{{ $booking->sportfield->fees }}");
@@ -999,8 +648,10 @@ const defaultToTime = "{{ $booking->sportfield->defaultSchedule->to_time }}";
 const originalFieldFee = {{ isset($payment) ? $payment->field_fee : 0 }};
 const originalWebsiteFee = {{ isset($payment) ? $payment->website_fee : 0 }};
 const originalTotalPrice = originalFieldFee + originalWebsiteFee;
+const originalDate = "{{ $booking->date->format('Y-m-d') }}";
+const originalDuration = "{{ $booking->duration}}";
 
-let selectedDate = "{{ $booking->date }}";
+let selectedDate = "{{ $booking->date->format('Y-m-d') }}";
 let selectedSlot = {
     from: "{{ $booking->start_time }}",
     to: "{{ $booking->end_time }}",
@@ -1018,79 +669,162 @@ const calendar = flatpickr('#booking-calendar', {
     dateFormat: "Y-m-d",
     onChange: function(selectedDates, dateStr) {
         // Update selected date
-        if (dateStr !== selectedDate) {
-            selectedDate = dateStr;
-            document.getElementById('selectedDate').value = dateStr;
-            
-            // Mark that changes have been made
-            hasChanges = true;
-            
-            // Show the date change in summary
-            const dateSummaryRow = document.getElementById('dateSummaryRow');
-            dateSummaryRow.style.display = 'table-row';
-            
-            const newDateSummary = document.getElementById('newDateSummary');
-            const newDate = new Date(dateStr);
-            newDateSummary.textContent = newDate.toLocaleDateString('en-US', { 
-                weekday: 'short', 
-                month: 'short', 
-                day: 'numeric',
-                year: 'numeric'
-            });
-            
-            // Show summary section
-            document.getElementById('changesSummary').style.display = 'block';
-            
-            // Load slots for the new date
-            loadSlots(dateStr, selectedDuration);
-            
-            // Update price in summary
-            updatePriceSummary();
-        }
+        selectedDate = dateStr;
+        document.getElementById('selectedDate').value = dateStr;
+        
+        // Mark that changes have been made
+       
+        hasChanges = true;
+        
+        // Show the date change in summary
+        updateDateSummary(dateStr);
+        
+        // Show summary section
+        document.getElementById('changesSummary').style.display = 'block';
+       
+        // Load slots for the new date
+        loadSlots(dateStr, selectedDuration);
     }
 });
 
 // Load slots for initial date
 document.addEventListener('DOMContentLoaded', function() {
     loadSlots(selectedDate, selectedDuration);
+    
+    // Initialize the changes summary - hide it initially
+    document.getElementById('changesSummary').style.display = 'none';
+    document.getElementById('dateSummaryRow').style.display = 'none';
+    document.getElementById('timeSummaryRow').style.display = 'none';
+    document.getElementById('durationSummaryRow').style.display = 'none';
+    document.getElementById('priceSummaryRow').style.display = 'none';
+    
+    // Remove price difference alert entirely
+    const priceDifferenceAlert = document.getElementById('priceDifferenceAlert');
+    if (priceDifferenceAlert) {
+        priceDifferenceAlert.style.display = 'none';
+        priceDifferenceAlert.remove(); // Remove from DOM entirely
+    }
 });
 
-// Duration selector handling
+// Update Date Summary
+function updateDateSummary(dateStr) {
+    if(dateStr!=originalDate){
+      
+    const dateSummaryRow = document.getElementById('dateSummaryRow');
+    dateSummaryRow.style.display = 'table-row';
+    
+    const newDateSummary = document.getElementById('newDateSummary');
+    const newDate = new Date(dateStr);
+    newDateSummary.textContent = newDate.toLocaleDateString('en-US', { 
+        weekday: 'short', 
+        month: 'short', 
+        day: 'numeric',
+        year: 'numeric'
+    });
+}else{
+    const dateSummaryRow = document.getElementById('dateSummaryRow');
+    dateSummaryRow.style.display = 'none';
+}
+    
+    
+    
+    
+}
+
+// Update Time Summary
+function updateTimeSummary(slot) {
+    originalstartTime = booking.start_time;
+    originalendTime = booking.end_time;
+    if(slot.from!=originalstartTime || slot.to!=originalendTime){
+    const timeSummaryRow = document.getElementById('timeSummaryRow');
+    timeSummaryRow.style.display = 'table-row';
+    
+    const newTimeSummary = document.getElementById('newTimeSummary');
+    newTimeSummary.textContent = slot.display;
+    
+    
+    }else{
+        const timeSummaryRow = document.getElementById('timeSummaryRow');
+        timeSummaryRow.style.display = 'none';
+    }
+}
+
+// Update Duration Summary - FIXED
+function updateDurationSummary(duration) {
+    if(duration!=originalDuration){
+    const durationSummaryRow = document.getElementById('durationSummaryRow');
+    durationSummaryRow.style.display = 'table-row';
+    
+    const newDurationSummary = document.getElementById('newDurationSummary');
+    newDurationSummary.textContent = `${duration} ${duration > 1 ? 'Hours' : 'Hour'}`;
+    updatePriceSummarySimple();
+    // Update price summary after changing duration but without warnings
+    
+    }else{
+        const durationSummaryRow = document.getElementById('durationSummaryRow');
+        durationSummaryRow.style.display = 'none';
+        updatePriceSummarySimple();
+    }
+}
+
+// Simplified price summary function - without warnings
+function updatePriceSummarySimple() {
+    // Calculate new prices
+    const fieldFee = hourlyRate * selectedDuration;
+    const websiteFee = fieldFee * 0.05; // 5% website fee
+    const totalPrice = fieldFee + websiteFee;
+    
+    // Update hidden fields with the new prices
+    document.getElementById('newFieldFee').value = fieldFee.toFixed(2);
+    document.getElementById('newWebsiteFee').value = websiteFee.toFixed(2);
+    document.getElementById('newTotalPrice').value = totalPrice.toFixed(2);
+    
+    // Display price summary
+    if(totalPrice > originalTotalPrice) {
+    const priceSummaryRow = document.getElementById('priceSummaryRow');
+    priceSummaryRow.style.display = 'table-row';
+    
+    // Update the new price display
+    const newPriceSummary = document.getElementById('newPriceSummary');
+    newPriceSummary.textContent = `$${totalPrice.toFixed(2)}`;
+    } else {
+        const priceSummaryRow = document.getElementById('priceSummaryRow');
+    priceSummaryRow.style.display = 'none';
+        
+    }
+    
+}
+
+// Duration selector handling - FIXED VERSION
+// Always processes the click without conditional checks
 const durationItems = document.querySelectorAll('.duration-item');
 durationItems.forEach(item => {
     item.addEventListener('click', function() {
+        // Get the duration from the clicked element
         const newDuration = parseInt(this.getAttribute('data-duration'));
         
-        if (newDuration !== selectedDuration) {
-            // Remove active class from all items
-            durationItems.forEach(el => el.classList.remove('active'));
-            
-            // Add active class to clicked item
-            this.classList.add('active');
-            
-            // Update selected duration
-            selectedDuration = newDuration;
-            document.getElementById('selectedDuration').value = newDuration;
-            
-            // Mark that changes have been made
-            hasChanges = true;
-            
-            // Show the duration change in summary
-            const durationSummaryRow = document.getElementById('durationSummaryRow');
-            durationSummaryRow.style.display = 'table-row';
-            
-            const newDurationSummary = document.getElementById('newDurationSummary');
-            newDurationSummary.textContent = `${newDuration} ${newDuration > 1 ? 'Hours' : 'Hour'}`;
-            
-            // Show summary section
-            document.getElementById('changesSummary').style.display = 'block';
-            
-            // This is critical - update price before loading slots
-            updatePriceSummary();
-            
-            // Reload slots with new duration - making sure we're passing the correct parameters
-            loadSlots(selectedDate, newDuration);
-        }
+        // Always update the UI regardless of previous selection
+        // Remove active class from all items
+        durationItems.forEach(el => el.classList.remove('active'));
+        
+        // Add active class to clicked item
+        this.classList.add('active');
+        
+        // Update selected duration
+        selectedDuration = newDuration;
+        document.getElementById('selectedDuration').value = newDuration;
+        
+        // Mark that changes have been made
+        hasChanges = true;
+        
+        // Show the duration change in summary
+        updateDurationSummary(newDuration);
+        
+        // Show summary section
+        document.getElementById('changesSummary').style.display = 'block';
+        
+        // Always reload slots with the selected duration
+        loadSlots(selectedDate, newDuration);
     });
 });
 
@@ -1197,6 +931,9 @@ function timeToMinutes(timeStr) {
 
 // Load available slots
 async function loadSlots(date, duration) {
+    console.log('Loading slots...');
+    console.log(`Selected date: ${date}`);
+
     console.log(`Loading slots for date: ${date}, duration: ${duration}`);
     const slotsContainer = document.getElementById('slots-container');
     
@@ -1302,34 +1039,21 @@ async function loadSlots(date, duration) {
                     // Select this slot
                     slotElement.classList.add('selected');
                     
-                    // If the slot is different from the currently selected one
-                    if (selectedSlot.from !== slot.from || selectedSlot.to !== slot.to) {
-                        // Update selected slot
-                        selectedSlot = slot;
-                        
-                        // Update form hidden fields
-                        document.getElementById('selectedSlotStart').value = slot.from;
-                        document.getElementById('selectedSlotEnd').value = slot.to;
-                        
-                        // Mark that changes have been made
-                        hasChanges = true;
-                        
-                        // Show the time change in summary
-                        const timeSummaryRow = document.getElementById('timeSummaryRow');
-                        timeSummaryRow.style.display = 'table-row';
-                        
-                        const newTimeSummary = document.getElementById('newTimeSummary');
-                        newTimeSummary.textContent = slot.display;
-                        
-                        // Show summary section
-                        document.getElementById('changesSummary').style.display = 'block';
-                        
-                        // Update price summary since time has changed
-                        updatePriceSummary();
-                        
-                        // Scroll to summary
-                        window.scrollTo(0, document.getElementById('changesSummary').offsetTop - 20);
-                    }
+                    // Update selected slot
+                    selectedSlot = slot;
+                    
+                    // Update form hidden fields
+                    document.getElementById('selectedSlotStart').value = slot.from;
+                    document.getElementById('selectedSlotEnd').value = slot.to;
+                    
+                    // Mark that changes have been made
+                    hasChanges = true;
+                    
+                    // Show the time change in summary
+                    updateTimeSummary(slot);
+                    
+                    // Show summary section
+                    document.getElementById('changesSummary').style.display = 'block';
                 });
             }
             
@@ -1382,45 +1106,6 @@ async function loadSlots(date, duration) {
     }
 }
 
-// Update price summary based on changes
-function updatePriceSummary() {
-    const fieldFee = hourlyRate * selectedDuration;
-    const websiteFee = fieldFee * 0.05; // 5% website fee
-    const totalPrice = fieldFee + websiteFee;
-    
-    // Update hidden fields
-    document.getElementById('newFieldFee').value = fieldFee.toFixed(2);
-    document.getElementById('newWebsiteFee').value = websiteFee.toFixed(2);
-    document.getElementById('newTotalPrice').value = totalPrice.toFixed(2);
-    
-    // Display price summary only if the price has changed
-    const priceSummaryRow = document.getElementById('priceSummaryRow');
-    if (Math.abs(totalPrice - originalTotalPrice) > 0.01) { // Using a small threshold to handle floating point comparison
-        priceSummaryRow.style.display = 'table-row';
-        
-        const newPriceSummary = document.getElementById('newPriceSummary');
-        newPriceSummary.textContent = `$${totalPrice.toFixed(2)}`;
-        
-        // Show price difference alert
-        const priceDifferenceAlert = document.getElementById('priceDifferenceAlert');
-        const priceDifferenceText = document.getElementById('priceDifferenceText');
-        
-        priceDifferenceAlert.style.display = 'block';
-        
-        const priceDifference = totalPrice - originalTotalPrice;
-        if (priceDifference > 0) {
-            priceDifferenceAlert.className = 'alert alert-warning';
-            priceDifferenceText.innerHTML = `The new booking is <strong>$${Math.abs(priceDifference).toFixed(2)} more expensive</strong> than your original booking. You will need to pay the additional amount.`;
-        } else {
-            priceDifferenceAlert.className = 'alert alert-info';
-            priceDifferenceText.innerHTML = `The new booking is <strong>$${Math.abs(priceDifference).toFixed(2)} less expensive</strong> than your original booking. You will receive a partial refund.`;
-        }
-    } else {
-        priceSummaryRow.style.display = 'none';
-        document.getElementById('priceDifferenceAlert').style.display = 'none';
-    }
-}
-
 // Helper function to show errors
 function showError(message) {
     // Remove any existing error messages
@@ -1465,5 +1150,4 @@ document.getElementById('editBookingForm').addEventListener('submit', function(e
     }
 });
 </script>
-</body> 
-</html>
+</x-layout>

@@ -1,4 +1,6 @@
 <x-layout title="{{ $team->name }} - Team Member View">
+    <x-player_header />
+    <section>
     <div class="container py-4">
         <!-- Success Message -->
         @if(session('success'))
@@ -284,4 +286,5 @@
             });
         });
     </script>
+    </section>
 </x-layout>

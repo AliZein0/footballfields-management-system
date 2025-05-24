@@ -52,7 +52,7 @@
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="teamActionsDropdown">
                                     <li><a class="dropdown-item" href="{{ route('teams.players.browse', $team->id) }}"><i class="fas fa-user-plus me-2"></i> Invite Player</a></li>
                                     <li><a class="dropdown-item" href="{{ route('invitations.team', $team->id) }}"><i class="fas fa-envelope me-2"></i> Manage Invitations</a></li>
-                                    <li><a class="dropdown-item" href="#"><i class="fas fa-calendar-plus me-2"></i> Schedule Game</a></li>
+                                   <li><a class="dropdown-item" href="{{ route('teams.matches', $team->id) }}"><i class="fas fa-calendar-alt me-2"></i> View Matches</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
                                         <form action="{{ route('teams.destroy', $team->id) }}" method="POST" class="d-inline delete-form">
@@ -245,68 +245,105 @@
                     </div>
                 </div>
     
-                <!-- Upcoming Games -->
-                <div class="card">
-                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Upcoming Games</h5>
-                        <a href="{{route('tournaments.browse')}}" class="btn btn-sm btn-primary">
-                            <i class="fas fa-trophy me-1"></i> Browse Tournaments
-                        </a>
-                    </div>
-                    <div class="card-body">
-                        @php
-                            // Get upcoming tournaments that the team has joined
-                            $upcomingTournaments = [];
-                            if(isset($team) && $team) {
-                                $upcomingTournaments = DB::table('tournaments')
-                                    ->join('team_tournament', 'tournaments.id', '=', 'team_tournament.tournament_id')
-                                    ->where('team_tournament.team_id', $team->id)
-                                    ->where('tournaments.start_date', '>=', now())
-                                    ->orderBy('tournaments.start_date', 'asc')
-                                    ->select('tournaments.*')
-                                    ->limit(3)
-                                    ->get();
-                            }
-                        @endphp
+               
 
-                        @if(count($upcomingTournaments) > 0)
-                        <div class="list-group">
-                            @foreach($upcomingTournaments as $tournament)
-                            <a href="{{ route('tournaments.show', $tournament->id) }}" class="list-group-item list-group-item-action">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h6 class="mb-1">{{ $tournament->name }}</h6>
-                                        <p class="small text-muted mb-0">
-                                            <i class="fas fa-calendar me-1"></i> {{ \Carbon\Carbon::parse($tournament->start_date)->format('F j, Y') }}
-                                            @if(isset($tournament->sportField))
-                                            <i class="fas fa-basketball-ball ms-2 me-1"></i> {{ ucfirst($tournament->sportField->type) }}
-                                            @endif
-                                        </p>
-                                    </div>
-                                    
-                                    <div>
-                                        <span class="badge bg-primary">
-                                            <i class="fas fa-arrow-right"></i>
-                                        </span>
-                                    </div>
+<!-- Upcoming Games (Enhanced) -->
+<div class="card">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Next Matches</h5>
+        <a href="{{ route('teams.matches', $team->id) }}" class="btn btn-sm btn-outline-primary">
+            <i class="fas fa-calendar-alt me-1"></i> View All
+        </a>
+    </div>
+    <div class="card-body">
+        @php
+            // Get next 3 upcoming matches for this team
+            $upcomingMatches = DB::table('matches')
+                ->join('tournaments', 'matches.tournament_id', '=', 'tournaments.id')
+                ->join('teams as team_a', 'matches.team_a_id', '=', 'team_a.id')
+                ->join('teams as team_b', 'matches.team_b_id', '=', 'team_b.id')
+                ->join('sport_fields', 'tournaments.field_id', '=', 'sport_fields.id')
+                ->where(function($query) use ($team) {
+                    $query->where('matches.team_a_id', $team->id)
+                          ->orWhere('matches.team_b_id', $team->id);
+                })
+                ->where('matches.date', '>=', now()->toDateString())
+                ->whereNull('matches.winner_id')
+                ->select(
+                    'matches.*',
+                    'tournaments.name as tournament_name',
+                    'team_a.name as team_a_name',
+                    'team_b.name as team_b_name',
+                    'sport_fields.name as field_name',
+                    'sport_fields.location as field_city'
+                )
+                ->orderBy('matches.date', 'asc')
+                ->orderBy('matches.start_time', 'asc')
+                ->limit(3)
+                ->get();
+        @endphp
+
+        @if($upcomingMatches->count() > 0)
+            <div class="list-group">
+                @foreach($upcomingMatches as $match)
+                <div class="list-group-item">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="text-center">
+                                    <small class="fw-bold">
+                                        {{ $match->team_a_id == $team->id ? $match->team_b_name : $match->team_a_name }}
+                                    </small>
+                                    <div class="small text-muted">vs {{ $team->name }}</div>
                                 </div>
-                            </a>
-                            @endforeach
-                        </div>
-                        @else
-                        <div class="text-center py-5">
-                            <div class="mb-3">
-                                <i class="fas fa-trophy fa-4x text-muted"></i>
+                                <div class="text-center">
+                                    <span class="badge bg-light text-dark">{{ $match->tournament_name }}</span>
+                                    <div class="small text-muted">Round {{ $match->round }}</div>
+                                </div>
                             </div>
-                            <h4>No Upcoming Tournaments</h4>
-                            <p class="text-muted">Join tournaments to compete with your team</p>
-                            <a href="{{route('tournaments.browse')}}" class="btn btn-primary">
-                                <i class="fas fa-search me-2"></i> Browse Tournaments
-                            </a>
                         </div>
-                        @endif
+                        <div class="col-md-4 text-end">
+                            <div class="small text-muted">
+                                <i class="fas fa-calendar me-1"></i>
+                                {{ \Carbon\Carbon::parse($match->date)->format('M j, Y') }}
+                            </div>
+                            <div class="small text-muted">
+                                <i class="fas fa-clock me-1"></i>
+                                {{ \Carbon\Carbon::parse($match->start_time, 'H:i:s')->format('g:i A') }}
+                            </div>
+                            <div class="small text-muted">
+                                <i class="fas fa-map-marker-alt me-1"></i>
+                                {{ $match->field_name }}
+                            </div>
+                        </div>
                     </div>
                 </div>
+                @endforeach
+            </div>
+            <div class="text-center mt-3">
+                <a href="{{ route('teams.matches', $team->id) }}" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-calendar-alt me-1"></i> View All Matches
+                </a>
+            </div>
+        @else
+            <div class="text-center py-5">
+                <div class="mb-3">
+                    <i class="fas fa-calendar-times fa-4x text-muted"></i>
+                </div>
+                <h4>No Upcoming Matches</h4>
+                <p class="text-muted">Your team doesn't have any scheduled matches at the moment.</p>
+                <div>
+                    <a href="{{ route('tournaments.browse') }}" class="btn btn-primary me-2">
+                        <i class="fas fa-search me-2"></i>Browse Tournaments
+                    </a>
+                    <a href="{{ route('teams.matches', $team->id) }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-history me-1"></i>View Match History
+                    </a>
+                </div>
+            </div>
+        @endif
+    </div>
+</div>
             </div>
         </div>
     

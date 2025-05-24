@@ -1,9 +1,9 @@
 <x-layout title="Find Your Field - Book Sports Venues Easily">
    <link rel="stylesheet" href="{{ asset('css/player-index.css') }}">
     
-    <!-- Modified Player Header with Error-Safe Notifications -->
+    
     <x-player_header>
-        <!-- Slot content inside player header component -->
+        
     </x-player_header>
 
     <main class="main">

@@ -373,33 +373,18 @@ class TeamController extends Controller
     }
     
     /**
-     * Show the team members.
-     *
-     * @param int $teamId
-     * @return \Illuminate\View\View
-     */
-    public function showPlayers($teamId)
-    {
-        $team = Team::with(['players.user'])->findOrFail($teamId);
-        
-        return view('teams.players', compact('team'));
-    }
+ * Show the team members.
+ *
+ * @param int $teamId
+ * @return \Illuminate\View\View
+ */
+public function showPlayer(Team $team ,Player $player)
+{
+
+    return view('players.show', compact('team' , 'player'));
+}
     
-    /**
-     * Show a specific player in a team.
-     *
-     * @param int $teamId
-     * @param int $playerId
-     * @return \Illuminate\View\View
-     */
-    public function showPlayer($teamId, $playerId)
-    {
-        $team = Team::findOrFail($teamId);
-        $player = Player::with('user')->where('id', $playerId)->where('team_id', $teamId)->firstOrFail();
-        
-        return view('teams.player_detail', compact('team', 'player'));
-    }
-    
+
     /**
      * Leave the team (for players who are not captains).
      *
@@ -469,4 +454,91 @@ class TeamController extends Controller
         return redirect()->route('teams.show', $team)
             ->with('success', 'Team captaincy transferred successfully.');
     }
+
+
+public function showMatches(Team $team)
+{
+    $user = Auth::user();
+    $player = Player::find($user->id);
+    
+    // Check if user has access to view this team's matches
+    if (!$player || ($player->team_id != $team->id && $user->id !== $team->captain_id)) {
+        return redirect()->route('dashboard')
+            ->with('error', 'You do not have permission to view this team\'s matches.');
+    }
+    
+    // Get all tournaments the team is participating in
+    $tournaments = DB::table('tournaments')
+        ->join('team_tournament', 'tournaments.id', '=', 'team_tournament.tournament_id')
+        ->join('sport_fields', 'tournaments.field_id', '=', 'sport_fields.id')
+        ->where('team_tournament.team_id', $team->id)
+        ->select('tournaments.*', 'sport_fields.name as field_name', 'sport_fields.location as field_city')
+        ->get();
+    
+    // Get all matches for this team
+    $matches = DB::table('matches')
+        ->join('tournaments', 'matches.tournament_id', '=', 'tournaments.id')
+        ->join('teams as team_a', 'matches.team_a_id', '=', 'team_a.id')
+        ->join('teams as team_b', 'matches.team_b_id', '=', 'team_b.id')
+        ->leftJoin('teams as winner', 'matches.winner_id', '=', 'winner.id')
+        ->join('sport_fields', 'tournaments.field_id', '=', 'sport_fields.id')
+        ->where(function($query) use ($team) {
+            $query->where('matches.team_a_id', $team->id)
+                  ->orWhere('matches.team_b_id', $team->id);
+        })
+        ->select(
+            ' matches.*',
+            'tournaments.name as tournament_name',
+            'tournaments.start_date as tournament_start',
+            'tournaments.end_date as tournament_end',
+            'team_a.name as team_a_name',
+            'team_a.logo_path as team_a_logo',
+            'team_b.name as team_b_name', 
+            'team_b.logo_path as team_b_logo',
+            'winner.name as winner_name',
+            'sport_fields.name as field_name',
+            'sport_fields.location as field_city'
+        )
+        ->orderBy('tournaments.start_date', 'desc')
+        ->orderBy('matches.date', 'asc')
+        ->orderBy('matches.start_time', 'asc')
+        ->get();
+    
+    // Group matches by tournament
+    $matchesByTournament = $matches->groupBy('tournament_name');
+    
+    // Separate upcoming and completed matches
+    $upcomingMatches = $matches->filter(function($match) {
+        return $match->date >= now()->toDateString() && 
+               in_array($match->status, ['scheduled', 'in_progress']);
+    });
+    
+    $completedMatches = $matches->filter(function($match) {
+        return $match->status == 'completed' || 
+               $match->status == 'cancelled' ||
+               ($match->date < now()->toDateString() && $match->status == 'scheduled');
+    });
+    
+    // Calculate statistics
+    $stats = [
+        'total_matches' => $matches->count(),
+        'wins' => $matches->where('status', 'completed')->where('winner_id', $team->id)->count(),
+        'losses' => $matches->where('status', 'completed')
+                          ->where('winner_id', '!=', null)
+                          ->where('winner_id', '!=', $team->id)
+                          ->count(),
+        'upcoming' => $upcomingMatches->count(),
+        'tournaments_count' => $tournaments->count(),
+    ];
+    
+    return view('teams.matches', compact(
+        'team', 
+        'tournaments', 
+        'matches', 
+        'matchesByTournament', 
+        'upcomingMatches', 
+        'completedMatches',
+        'stats'
+    ));
+}
 }

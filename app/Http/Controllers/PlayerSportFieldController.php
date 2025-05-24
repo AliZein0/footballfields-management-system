@@ -10,7 +10,7 @@ use App\Models\Booking;
 use App\Models\Review;
 use App\Models\Player;
 
-class SportFieldController extends Controller
+class PlayerSportFieldController extends Controller
 {
 /**
  * This is a partial controller implementation that needs to be added to your existing controller

@@ -232,7 +232,7 @@ return new class extends Migration
             $table->foreignId('sport_field_id')->constrained('sport_fields');
             $table->timestamps();
         });
-
+         
       
     }
 

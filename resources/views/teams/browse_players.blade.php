@@ -1,4 +1,6 @@
 <x-layout title="Add Players to {{ $team->name }}">
+    <x-player_header />
+        <section>
     <div class="container py-4">
         <!-- Page Header -->
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -160,4 +162,5 @@
             </div>
         </div>
     </div>
+    </section>
 </x-layout>

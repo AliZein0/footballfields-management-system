@@ -513,6 +513,7 @@
   </style>
 </head>
 <body>
+ 
   <section class="hero-section text-center">
     <div class="container">
       <h1 class="hero-heading">Manage Your Team</h1>

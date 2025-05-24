@@ -1,5 +1,7 @@
 {{-- teams/manage.blade.php (for team captains) --}}
 <x-layout title="{{ $team->name }} - Management">
+    <x-player_header />
+    <section>
     <div class="container py-4">
         <!-- Success Message -->
         @if(session('success'))
@@ -48,7 +50,7 @@
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="teamActionsDropdown">
                                 <li><a class="dropdown-item" href="{{ route('teams.players.browse', $team->id) }}"><i class="fas fa-user-plus me-2"></i> Add Player</a></li>
                                 <li><a class="dropdown-item" href="{{ route('invitations.team', $team->id) }}"><i class="fas fa-envelope me-2"></i> Manage Invitations</a></li>
-                                <li><a class="dropdown-item" href="#"><i class="fas fa-calendar-plus me-2"></i> Schedule Game</a></li>
+                                
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
                                     <form action="{{ route('teams.destroy', $team->id) }}" method="POST" class="d-inline delete-form">
@@ -145,47 +147,51 @@
                         <h5 class="mb-0">Team Management</h5>
                     </div>
                     <div class="card-body p-0">
-                        <div class="list-group list-group-flush">
-                            <a href="{{ route('teams.players.browse', $team->id) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3">
-                                <div>
-                                    <h6 class="mb-0"><i class="fas fa-user-plus text-primary me-2"></i> Add Players</h6>
-                                    <p class="text-muted small mb-0">Invite new players to join your team</p>
-                                </div>
-                                <i class="fas fa-chevron-right text-muted"></i>
-                            </a>
-                            
-                            <a href="{{ route('invitations.team', $team->id) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3">
-                                <div>
-                                    <h6 class="mb-0">
-                                        <i class="fas fa-envelope text-primary me-2"></i> Pending Invitations
-                                        @php
-                                            $pendingCount = $team->pendingInvitations()->count();
-                                        @endphp
-                                        @if($pendingCount > 0)
-                                            <span class="badge bg-primary ms-2">{{ $pendingCount }}</span>
-                                        @endif
-                                    </h6>
-                                    <p class="text-muted small mb-0">Manage sent invitations</p>
-                                </div>
-                                <i class="fas fa-chevron-right text-muted"></i>
-                            </a>
-                            
-                            <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3">
-                                <div>
-                                    <h6 class="mb-0"><i class="fas fa-calendar-alt text-primary me-2"></i> Schedule Games</h6>
-                                    <p class="text-muted small mb-0">Book venues and schedule friendly matches</p>
-                                </div>
-                                <i class="fas fa-chevron-right text-muted"></i>
-                            </a>
-                            
-                            <a href="{{ route('tournaments.browse') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3">
-                                <div>
-                                    <h6 class="mb-0"><i class="fas fa-trophy text-primary me-2"></i> Join Tournament</h6>
-                                    <p class="text-muted small mb-0">Find and register for tournaments</p>
-                                </div>
-                                <i class="fas fa-chevron-right text-muted"></i>
-                            </a>
-                        </div>
+                        
+<div class="list-group list-group-flush">
+    <!-- Existing items -->
+    <a href="{{ route('teams.players.browse', $team->id) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3">
+        <div>
+            <h6 class="mb-0"><i class="fas fa-user-plus text-primary me-2"></i> Add Players</h6>
+            <p class="text-muted small mb-0">Invite new players to join your team</p>
+        </div>
+        <i class="fas fa-chevron-right text-muted"></i>
+    </a>
+    
+    <a href="{{ route('invitations.team', $team->id) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3">
+        <div>
+            <h6 class="mb-0">
+                <i class="fas fa-envelope text-primary me-2"></i> Pending Invitations
+                @php
+                    $pendingCount = $team->pendingInvitations()->count();
+                @endphp
+                @if($pendingCount > 0)
+                    <span class="badge bg-primary ms-2">{{ $pendingCount }}</span>
+                @endif
+            </h6>
+            <p class="text-muted small mb-0">Manage sent invitations</p>
+        </div>
+        <i class="fas fa-chevron-right text-muted"></i>
+    </a>
+
+    <!-- NEW: Team Matches Link -->
+    <a href="{{ route('teams.matches', $team->id) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3">
+        <div>
+            <h6 class="mb-0"><i class="fas fa-calendar-alt text-primary me-2"></i> View Matches</h6>
+            <p class="text-muted small mb-0">See all tournament matches and results</p>
+        </div>
+        <i class="fas fa-chevron-right text-muted"></i>
+    </a>
+    
+    <a href="{{ route('tournaments.browse') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3">
+        <div>
+            <h6 class="mb-0"><i class="fas fa-trophy text-primary me-2"></i> Join Tournament</h6>
+            <p class="text-muted small mb-0">Find and register for tournaments</p>
+        </div>
+        <i class="fas fa-chevron-right text-muted"></i>
+    </a>
+</div>
+                        
                     </div>
                 </div>
                 
@@ -294,4 +300,5 @@
             });
         });
     </script>
+    </section>
 </x-layout>

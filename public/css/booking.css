@@ -1,0 +1,565 @@
+/* ===== SHARED STYLES FOR BOOKING SYSTEM ===== */
+
+/* CSS Custom Properties (Variables) */
+:root {
+    --primary-color: #2563eb;
+    --secondary-color: #0f172a;
+    --success-color: #059669;
+    --danger-color: #e11d48;
+    --warning-color: #f59e0b;
+    --info-color: #0284c7;
+    --light-bg: #f8fafc;
+    --card-bg: #ffffff;
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --border-radius: 12px;
+    --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Global Styles */
+body {
+    background: var(--light-bg);
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+
+/* App Container */
+.app-container {
+    max-width: 1340px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* App Header */
+.app-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.app-title {
+    font-weight: 800;
+    font-size: 2.2rem;
+    color: var(--secondary-color);
+    margin-bottom: 0.5rem;
+    position: relative;
+    display: inline-block;
+}
+
+.app-title:after {
+    content: '';
+    position: absolute;
+    width: 60px;
+    height: 4px;
+    background: var(--primary-color);
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 2px;
+}
+
+/* Card Styles */
+.card {
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    border: none;
+    box-shadow: var(--shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.card-header {
+    background-color: var(--card-bg);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 1.25rem 1.5rem;
+    font-weight: 700;
+    color: var(--secondary-color);
+    display: flex;
+    align-items: center;
+}
+
+.card-header i {
+    margin-right: 0.75rem;
+    color: var(--primary-color);
+    font-size: 1.25rem;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+/* Field Image Styles */
+.field-image-container {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+.field-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.card:hover .field-image {
+    transform: scale(1.05);
+}
+
+.field-badge {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    font-weight: 600;
+    z-index: 2;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+/* Add this CSS to your booking.css file */
+
+/* ===== COLLAPSIBLE MAIN FIELD OVERVIEW ===== */
+.main-field-overview-toggle {
+    transition: color 0.3s ease;
+    cursor: pointer;
+    user-select: none;
+    margin-bottom: 0; /* Remove default margin since content is hidden */
+}
+
+.main-field-overview-toggle:hover {
+    color: var(--primary-color);
+}
+
+.main-field-overview-chevron {
+    font-size: 0.8em;
+    margin-right: 10px;
+    color: var(--primary-color);
+    transition: transform 0.3s ease;
+}
+
+.main-field-overview-content {
+    display: none !important; /* Force hide initially */
+    opacity: 0;
+    transition: all 0.3s ease;
+    margin-top: 1rem; /* Add space when expanded */
+}
+
+.main-field-overview-content.show {
+    display: block !important;
+    opacity: 1;
+    animation: fadeInDown 0.3s ease;
+}
+
+/* Field image styling within collapsible content */
+.main-field-overview-content .field-image-container {
+    height: 300px;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    position: relative;
+}
+
+.main-field-overview-content .field-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Animation for smooth expansion */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Ensure field badge is positioned correctly within collapsible content */
+.main-field-overview-content .field-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(37, 99, 235, 0.9);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius);
+    font-size: 0.875rem;
+    font-weight: 600;
+    z-index: 2;
+}
+
+/* Hide the field image container when collapsed */
+.field-image-container {
+    position: relative;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .main-field-overview-content .field-image-container {
+        height: 250px;
+    }
+}
+/* Calendar Styles (Flatpickr) */
+.flatpickr-calendar {
+    box-shadow: var(--shadow) !important;
+    border-radius: var(--border-radius) !important;
+    border: none !important;
+    margin-top: 0.5rem;
+    width: 100% !important;
+}
+
+.flatpickr-day {
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.flatpickr-day.selected, 
+.flatpickr-day.startRange, 
+.flatpickr-day.endRange, 
+.flatpickr-day.selected.inRange, 
+.flatpickr-day.startRange.inRange, 
+.flatpickr-day.endRange.inRange, 
+.flatpickr-day.selected:focus, 
+.flatpickr-day.startRange:focus, 
+.flatpickr-day.endRange:focus, 
+.flatpickr-day.selected:hover, 
+.flatpickr-day.startRange:hover, 
+.flatpickr-day.endRange:hover, 
+.flatpickr-day.selected.prevMonthDay, 
+.flatpickr-day.startRange.prevMonthDay, 
+.flatpickr-day.endRange.prevMonthDay, 
+.flatpickr-day.selected.nextMonthDay, 
+.flatpickr-day.startRange.nextMonthDay, 
+.flatpickr-day.endRange.nextMonthDay {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.flatpickr-day.today {
+    border-color: var(--primary-color);
+}
+
+/* Duration Selector */
+.duration-selector {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+}
+
+.duration-item {
+    flex: 1;
+    text-align: center;
+    padding: 0.75rem;
+    background: #f1f5f9;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.duration-item:hover {
+    background: #e2e8f0;
+}
+
+.duration-item.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.duration-value {
+    font-weight: 700;
+    font-size: 1.25rem;
+    display: block;
+}
+
+.duration-label {
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+    display: block;
+}
+
+/* Time Slots Grid */
+.slots-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 10px;
+    margin-top: 0.5rem;
+}
+
+.slot-item {
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: var(--border-radius);
+    padding: 0.75rem 0.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.slot-item:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-3px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.slot-item.available {
+    border-color: #e2e8f0;
+    color: var(--text-primary);
+}
+
+.slot-item.selected {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.slot-item.booked {
+    background: #fee2e2;
+    border-color: #fecaca;
+    color: #ef4444;
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+.slot-time {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: 0.875rem;
+}
+
+.slot-status {
+    font-size: 0.75rem;
+    display: block;
+    font-weight: 500;
+}
+
+.slot-item.available .slot-status {
+    color: var(--success-color);
+}
+
+.slot-item.booked .slot-status {
+    color: var(--danger-color);
+}
+
+.slot-item.selected .slot-time,
+.slot-item.selected .slot-status {
+    color: white;
+}
+
+/* Date Display */
+.date-display {
+    margin-bottom: 0.75rem;
+    padding: 0.5rem;
+    background: #f8fafc;
+    border-radius: var(--border-radius);
+    text-align: center;
+    border: 1px solid #e2e8f0;
+}
+
+/* Slots Loader */
+.slots-loader {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    z-index: 5;
+    border-radius: var(--border-radius);
+}
+
+.slots-loader-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(37, 99, 235, 0.2);
+    border-left-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.no-slots-message {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-secondary);
+    background: #f8fafc;
+    border-radius: var(--border-radius);
+    border: 1px dashed #e2e8f0;
+}
+
+/* Button Styles */
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    border-radius: 50px;
+    box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover, .btn-primary:focus {
+    background-color: #1d4ed8;
+    border-color: #1d4ed8;
+    box-shadow: 0 10px 15px rgba(37, 99, 235, 0.3);
+    transform: translateY(-2px);
+}
+
+.btn-success {
+    background-color: var(--success-color);
+    border-color: var(--success-color);
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    border-radius: 50px;
+    box-shadow: 0 4px 6px rgba(5, 150, 105, 0.2);
+    transition: all 0.3s ease;
+}
+
+.btn-success:hover, .btn-success:focus {
+    background-color: #047857;
+    border-color: #047857;
+    box-shadow: 0 10px 15px rgba(5, 150, 105, 0.3);
+    transform: translateY(-2px);
+}
+
+.btn-lg {
+    padding: 1rem 2rem;
+    font-size: 1.125rem;
+}
+
+.btn-outline-secondary {
+    color: var(--text-secondary);
+    border-color: #e2e8f0;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #f1f5f9;
+    border-color: #cbd5e1;
+}
+
+.btn-outline-danger {
+    color: var(--danger-color);
+    border-color: var(--danger-color);
+}
+
+.btn-outline-danger:hover {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+/* Alert Styles */
+.alert {
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.alert-danger {
+    background-color: #fee2e2;
+    color: #b91c1c;
+    border-left: 4px solid var(--danger-color);
+}
+
+.alert-danger i {
+    color: #ef4444;
+    margin-right: 0.5rem;
+}
+
+.alert-info {
+    background-color: #f0f9ff;
+    color: var(--info-color);
+    border-left: 4px solid var(--info-color);
+}
+
+.alert-warning {
+    background-color: #fff7ed;
+    color: #b45309;
+    border-left: 4px solid var(--warning-color);
+}
+
+.alert-success {
+    background-color: #ecfdf5;
+    color: #065f46;
+    border-left: 4px solid var(--success-color);
+}
+
+/* Form Styles */
+.form-label {
+    font-weight: 600;
+    color: var(--secondary-color);
+    margin-bottom: 0.5rem;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.25);
+}
+
+.form-check-input:checked {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* Map Container */
+.map-container {
+    height: 400px;
+    overflow: hidden;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+}
+
+.map-container iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+/* Animations */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(37, 99, 235, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .slots-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    }
+
+    .duration-selector {
+        flex-direction: column;
+    }
+
+    .app-container {
+        padding: 10px;
+    }
+}
