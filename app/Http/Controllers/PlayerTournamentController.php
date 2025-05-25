@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 
-class TournamentController extends Controller
+class PlayerTournamentController extends Controller
 {
     // TournamentController.php
     public function browse(Request $request)

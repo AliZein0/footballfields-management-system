@@ -6,6 +6,9 @@ use App\Models\Booking;
 use App\Models\User;
 use App\Models\Player;
 use App\Models\SportField;
+use App\Models\DefaultSchedule;
+
+use App\Models\ScheduleDetail;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -37,106 +40,169 @@ class BookingController extends Controller
     }
 
     public function store(Request $request)
-{
-    // Validate the request data
-    $validated = $request->validate([
-        'field_id' => 'required|exists:sport_fields,id',
-        'booking_date' => 'required|date|date_format:Y-m-d',
-        'start_time' => 'required|date_format:H:i',
-        'end_time' => 'required|date_format:H:i|after:start_time',
-        'details' => 'nullable|string|max:1000',
-        'payment_method' => 'required|in:omt,wish',
-        'payment_code' => 'required|string|max:100',
-        'total_price' => 'required|numeric',
-        'website_fee' => 'required|numeric',
-        'field_fee' => 'required|numeric',
-    ]);
+    {
+        // Validate the request data
+        $validated = $request->validate([
+            'field_id' => 'required|exists:sport_fields,id',
+            'booking_date' => 'required|date|date_format:Y-m-d',
+            'start_time' => 'required|date_format:H:i',
+            'end_time' => 'required|date_format:H:i|after:start_time',
+            'details' => 'nullable|string|max:1000',
+            'payment_method' => 'required|in:omt,wish',
+            'payment_code' => 'required|string|max:100',
+            'total_price' => 'required|numeric',
+            'website_fee' => 'required|numeric',
+            'field_fee' => 'required|numeric',
+        ]);
 
-    
-    // Begin a database transaction
-    DB::beginTransaction();
-    
-    // Check if the time slot is already booked, EXCLUDING cancelled bookings
-    $conflictingBooking = Booking::where('field_id', $request->field_id)
-        ->where('date', $request->booking_date)
-        ->where('status', '!=', 'cancelled') // Add this line to exclude cancelled bookings
-        ->where(function($query) use ($request) {
-            $query->where(function($q) use ($request) {
-                // Booking starts during an existing booking
-                $q->where('start_time', '<=', $request->start_time)
-                  ->where('end_time', '>', $request->start_time);
+        
+        // Begin a database transaction
+        DB::beginTransaction();
+        
+        // Check if the time slot is available according to schedule details
+        $scheduleConflict = $this->checkScheduleAvailability(
+            $request->field_id, 
+            $request->booking_date, 
+            $request->start_time, 
+            $request->end_time
+        );
+        
+        if ($scheduleConflict) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'This time slot is not available according to field schedule. Please select another time.'
+            ], 409);
+        }
+        
+        // Check if the time slot is already booked, EXCLUDING cancelled bookings
+        $conflictingBooking = Booking::where('field_id', $request->field_id)
+            ->where('date', $request->booking_date)
+            ->where('status', '!=', 'cancelled') // Add this line to exclude cancelled bookings
+            ->where(function($query) use ($request) {
+                $query->where(function($q) use ($request) {
+                    // Booking starts during an existing booking
+                    $q->where('start_time', '<=', $request->start_time)
+                      ->where('end_time', '>', $request->start_time);
+                })
+                ->orWhere(function($q) use ($request) {
+                    // Booking ends during an existing booking
+                    $q->where('start_time', '<', $request->end_time)
+                      ->where('end_time', '>=', $request->end_time);
+                })
+                ->orWhere(function($q) use ($request) {
+                    // Booking completely contains an existing booking
+                    $q->where('start_time', '>=', $request->start_time)
+                      ->where('end_time', '<=', $request->end_time);
+                });
             })
-            ->orWhere(function($q) use ($request) {
-                // Booking ends during an existing booking
-                $q->where('start_time', '<', $request->end_time)
-                  ->where('end_time', '>=', $request->end_time);
-            })
-            ->orWhere(function($q) use ($request) {
-                // Booking completely contains an existing booking
-                $q->where('start_time', '>=', $request->start_time)
-                  ->where('end_time', '<=', $request->end_time);
-            });
-        })
-        ->first();
-    
-    if ($conflictingBooking) {
+            ->first();
+        
+        if ($conflictingBooking) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'This time slot is already booked. Please select another time.'
+            ], 409);
+        }
+        
+        // Create the new booking
+        $booking = Booking::create([
+            'date' => $request->booking_date,
+            'start_time' => $request->start_time,
+            'end_time' => $request->end_time,
+            'details' => $request->details,
+            'player_id' => session('player_id'), // Assuming the player ID is stored in the session
+            'field_id' => $request->field_id,
+            'status' => 'upcoming',
+        ]);
+        
+        // Create the payment record associated with the booking
+        $payment = DB::table('payments')->insert([
+            'website_fee' => $request->website_fee,
+            'field_fee' => $request->field_fee,
+            'transfer_code' => $request->payment_code,
+            'transfer_type' => $request->payment_method,
+            'paid_at' => now()->timezone('Asia/Beirut'),
+            'status' => 'pending',
+            'booking_id' => $booking->id,
+            'created_at' => now()->timezone('Asia/Beirut'),
+            'updated_at' => now()->timezone('Asia/Beirut'),
+        ]);
+
+        // Generate a reference number
+        $reference = 'BK-' . str_pad($booking->id, 6, '0', STR_PAD_LEFT);
+        
+        // Commit the transaction
+        DB::commit();
+        
         return response()->json([
-            'success' => false,
-            'message' => 'This time slot is already booked. Please select another time.'
-        ], 409);
+            'success' => true,
+            'message' => 'Booking confirmed successfully!',
+            'reference' => $reference,
+            'booking_id' => $booking->id
+        ]);
+    }
+
+    /**
+     * Check if a time slot is available according to schedule details
+     */
+    private function checkScheduleAvailability($fieldId, $date, $startTime, $endTime)
+    {
+        // Get the field's default schedule
+        $field = SportField::with('defaultSchedule')->findOrFail($fieldId);
+        
+        // Check if there are any schedule details that override the default for this date
+        $scheduleDetails = ScheduleDetail::whereHas('schedule', function($query) use ($field) {
+            $query->where('id', $field->default_schedule_id);
+        })
+        ->where('start_date', '<=', $date)
+        ->where('end_date', '>=', $date)
+        ->get();
+        
+        // If no specific schedule details, use default schedule
+        if ($scheduleDetails->isEmpty()) {
+            return false; // Default schedule is always available
+        }
+        
+        // Check each schedule detail that applies to this date
+        foreach ($scheduleDetails as $detail) {
+            // If status is unavailable, check if our booking time overlaps
+            if ($detail->status === 'unavailable') {
+                $detailStartTime = $detail->start_time;
+                $detailEndTime = $detail->end_time;
+                
+                // Check for time overlap
+                if ($this->timesOverlap($startTime, $endTime, $detailStartTime, $detailEndTime)) {
+                    return true; // There's a conflict
+                }
+            }
+        }
+        
+        return false; // No conflicts found
     }
     
-    // Create the new booking
-    $booking = Booking::create([
-        'date' => $request->booking_date,
-        'start_time' => $request->start_time,
-        'end_time' => $request->end_time,
-        'details' => $request->details,
-        'player_id' => session('player_id'), // Assuming the player ID is stored in the session
-        'field_id' => $request->field_id,
-        'status' => 'upcoming',
-    ]);
-    
-    // Create the payment record associated with the booking
-    $payment = DB::table('payments')->insert([
-        'website_fee' => $request->website_fee,
-        'field_fee' => $request->field_fee,
-        'transfer_code' => $request->payment_code,
-        'transfer_type' => $request->payment_method,
-        'paid_at' => now()->timezone('Asia/Beirut'),
-        'status' => 'pending',
-        'booking_id' => $booking->id,
-        'created_at' => now()->timezone('Asia/Beirut'),
-        'updated_at' => now()->timezone('Asia/Beirut'),
-    ]);
-
-    // Generate a reference number
-    $reference = 'BK-' . str_pad($booking->id, 6, '0', STR_PAD_LEFT);
-    
-    // Commit the transaction
-    DB::commit();
-    
-    return response()->json([
-        'success' => true,
-        'message' => 'Booking confirmed successfully!',
-        'reference' => $reference,
-        'booking_id' => $booking->id
-    ]);
-}
-
+    /**
+     * Check if two time ranges overlap
+     */
+    private function timesOverlap($start1, $end1, $start2, $end2)
+    {
+        return ($start1 < $end2) && ($end1 > $start2);
+    }
 
     public function getBookedSlots(Request $request, $fieldId)
     {
         $date = $request->query('date');
         $timezone = 'Asia/Beirut';
         $now = now()->timezone($timezone);
+        
         if (!$date) {
             return response()->json(['success' => false, 'message' => 'Date parameter is required'], 400);
         }
         
-        try {
+       
             // Get field and its schedule
-            $field = SportField::findOrFail($fieldId);
+            $field = SportField::with('defaultSchedule')->findOrFail($fieldId);
             $operatingStart = Carbon::parse($field->defaultSchedule->from_time);
             $operatingEnd = Carbon::parse($field->defaultSchedule->to_time);
             $slotDuration = 60; // minutes - adjust based on your system
@@ -151,7 +217,15 @@ class BookingController extends Controller
             
             $bookings = $bookingsQuery->get();
             
-            // Format booked slots
+            // Get schedule details for this date
+            $scheduleDetails = ScheduleDetail::whereHas('schedule', function($query) use ($field) {
+                $query->where('id', $field->default_schedule_id);
+            })
+            ->where('start_date', '<=', $date)
+            ->where('end_date', '>=', $date)
+            ->get();
+            
+            // Format booked slots from actual bookings
             $bookedSlots = [];
             foreach ($bookings as $booking) {
                 // Format times consistently as HH:MM
@@ -166,7 +240,32 @@ class BookingController extends Controller
                 $bookedSlots[$startTime] = $endTime;
             }
             
+            // Add unavailable slots from schedule details
+            foreach ($scheduleDetails as $detail) {
+                if ($detail->status === 'unavailable') {
+                    $detailStartTime = Carbon::parse($detail->start_time)->format('H:i');
+                    $detailEndTime = Carbon::parse($detail->end_time)->format('H:i');
+                    
+                    // Generate all slots within this unavailable period
+                    $unavailableStart = Carbon::parse($detail->start_time);
+                    $unavailableEnd = Carbon::parse($detail->end_time);
+                    
+                    $currentSlot = $unavailableStart->copy();
+                    while ($currentSlot < $unavailableEnd) {
+                        $slotKey = $currentSlot->format('H:i');
+                        $slotEnd = $currentSlot->copy()->addMinutes($slotDuration);
+                        
+                        // Only add if the slot is completely within the unavailable period
+                        if ($slotEnd <= $unavailableEnd) {
+                            $bookedSlots[$slotKey] = $slotEnd->format('H:i');
+                        }
+                        
+                        $currentSlot->addMinutes($slotDuration);
+                    }
+                }
+            }
             
+            // Handle past time slots for today
             if ($date == $now->format('Y-m-d')) {
                 $currentTime = $now->format('H:i');
                 $current = Carbon::parse($currentTime);
@@ -197,57 +296,63 @@ class BookingController extends Controller
                 'success' => true,
                 'slots' => $bookedSlots,
                 'date' => $date,
-                'field_id' => $fieldId
+                'field_id' => $fieldId,
+                'schedule_info' => [
+                    'has_custom_schedule' => $scheduleDetails->isNotEmpty(),
+                    'unavailable_periods' => $scheduleDetails->where('status', 'unavailable')->map(function($detail) {
+                        return [
+                            'start_time' => $detail->start_time,
+                            'end_time' => $detail->end_time,
+                            'start_date' => $detail->start_date,
+                            'end_date' => $detail->end_date
+                        ];
+                    })->values()
+                ]
             ]);
             
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch booked slots: ' . $e->getMessage()
-            ], 500);
-        }
+       
     }
-   /**
- * Show the form for editing the specified booking.
- *
- * @param  Booking  $booking
- * @return \Illuminate\View\View
- */
-public function edit(Booking $booking)
-{
-   
     
-    // Fetch payment details for this booking
-    $payment = DB::table('payments')->where('booking_id', $booking->id)->first();
+    // ... rest of your existing methods remain unchanged ...
     
-    // Return the view with the booking and payment data
-    return view('booking.edit', compact('booking', 'payment'));
-}
-   /**
- * Update the specified booking in storage.
- *
- * @param  \Illuminate\Http\Request  $request
- * @param  Booking  $booking
- * @return \Illuminate\Http\Response
- */
-public function update(Request $request, Booking $booking)
-{
-    
-    $validated = $request->validate([
-        'booking_date' => 'required|date',
-        'start_time' => 'required|date_format:H:i',
-        'end_time' => 'required|date_format:H:i|after:start_time',
-        'details' => 'nullable|string|max:1000',
-        'new_field_fee' => 'required|numeric',
-        'new_website_fee' => 'required|numeric',
-        'new_total_price' => 'required|numeric',
-    ]);
-    
-    
-       // Begin a database transaction
+    public function edit(Booking $booking)
+    {
+        // Fetch payment details for this booking
+        $payment = DB::table('payments')->where('booking_id', $booking->id)->first();
+        
+        // Return the view with the booking and payment data
+        return view('booking.edit', compact('booking', 'payment'));
+    }
+
+    public function update(Request $request, Booking $booking)
+    {
+        $validated = $request->validate([
+            'booking_date' => 'required|date',
+            'start_time' => 'required|date_format:H:i',
+            'end_time' => 'required|date_format:H:i|after:start_time',
+            'details' => 'nullable|string|max:1000',
+            'new_field_fee' => 'required|numeric',
+            'new_website_fee' => 'required|numeric',
+            'new_total_price' => 'required|numeric',
+        ]);
+        
+        // Begin a database transaction
         DB::beginTransaction();
         
-       // Check if the time slot is already booked by someone else
+        // Check schedule availability for the new time slot
+        $scheduleConflict = $this->checkScheduleAvailability(
+            $booking->field_id, 
+            $request->booking_date, 
+            $request->start_time, 
+            $request->end_time
+        );
+        
+        if ($scheduleConflict) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'This time slot is not available according to field schedule. Please select another time.');
+        }
+        
+        // Check if the time slot is already booked by someone else
         $conflictingBooking = Booking::where('field_id', $booking->field_id)
             ->where('id', '!=', $booking->id)
             ->where('date', $request->booking_date)
@@ -272,6 +377,7 @@ public function update(Request $request, Booking $booking)
             ->first();
         
         if ($conflictingBooking) {
+            DB::rollBack();
             return redirect()->back()->with('error', 'This time slot is already booked. Please select another time.');
         }
         
@@ -336,100 +442,76 @@ public function update(Request $request, Booking $booking)
         
         return redirect()->back()
             ->with('success', 'Booking updated successfully');
-            
-    
-}
-
-/**
- * Remove the specified booking from storage.
- *
- * @param  \App\Models\Booking  $booking
- * @return \Illuminate\Http\Response
- */
-public function destroy(Booking $booking)
-{
-    try {
-        // Begin transaction
-        DB::beginTransaction();
-        
-        // Check if the booking exists
-        if (!$booking) {
-            return redirect()->back()->with('error', 'Booking not found');
-        }
-        
-        // Log this cancellation
-        Log::info('Cancelling booking', [
-            'booking_id' => $booking->id,
-            'date' => $booking->date,
-            'time' => $booking->start_time . ' - ' . $booking->end_time
-        ]);
-        
-        // Update the booking status instead of deleting it
-        $booking->update([
-            'status' => 'cancelled',
-            'cancelled_at' => now()->timezone('Asia/Beirut')
-        ]);
-        
-        // Update payment status if exists
-        $payment = DB::table('payments')->where('booking_id', $booking->id)->first();
-        if ($payment) {
-            DB::table('payments')->where('booking_id', $booking->id)->update([
-                'status' => 'refunded',
-                'updated_at' => now()->timezone('Asia/Beirut')
-            ]);
-        }
-        
-        // Commit transaction
-        DB::commit();
-        
-        return redirect()->route('bookings.history')->with('success', 'Booking cancelled successfully');
-        
-    } catch (\Exception $e) {
-        // Rollback transaction
-        DB::rollBack();
-        
-        Log::error('Booking cancellation failed: ' . $e->getMessage(), [
-            'exception' => $e,
-            'trace' => $e->getTraceAsString()
-        ]);
-        
-        return redirect()->back()->with('error', 'An error occurred: ' . $e->getMessage());
     }
-}
 
-/**
- * Get payment details for a booking
- * 
- * @param int $bookingId
- * @return object|null
- */
-public function getPaymentDetails($bookingId)
-{
-    return DB::table('payments')
-        ->where('booking_id', $bookingId)
-        ->first();
-}
-
-/**
- * Show a specific booking with payment details
- *
- * @param int $bookingId
- * @return \Illuminate\View\View
- */
-public function showBooking($bookingId)
-{
-    $booking = Booking::findOrFail($bookingId);
-    $payment = $this->getPaymentDetails($bookingId);
+    // ... rest of your existing methods remain unchanged ...
     
-    return view('booking.show', compact('booking', 'payment'));
-}
+    public function destroy(Booking $booking)
+    {
+        try {
+            // Begin transaction
+            DB::beginTransaction();
+            
+            // Check if the booking exists
+            if (!$booking) {
+                return redirect()->back()->with('error', 'Booking not found');
+            }
+            
+            // Log this cancellation
+            Log::info('Cancelling booking', [
+                'booking_id' => $booking->id,
+                'date' => $booking->date,
+                'time' => $booking->start_time . ' - ' . $booking->end_time
+            ]);
+            
+            // Update the booking status instead of deleting it
+            $booking->update([
+                'status' => 'cancelled',
+                'cancelled_at' => now()->timezone('Asia/Beirut')
+            ]);
+            
+            // Update payment status if exists
+            $payment = DB::table('payments')->where('booking_id', $booking->id)->first();
+            if ($payment) {
+                DB::table('payments')->where('booking_id', $booking->id)->update([
+                    'status' => 'refunded',
+                    'updated_at' => now()->timezone('Asia/Beirut')
+                ]);
+            }
+            
+            // Commit transaction
+            DB::commit();
+            
+            return redirect()->route('bookings.history')->with('success', 'Booking cancelled successfully');
+            
+        } catch (\Exception $e) {
+            // Rollback transaction
+            DB::rollBack();
+            
+            Log::error('Booking cancellation failed: ' . $e->getMessage(), [
+                'exception' => $e,
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return redirect()->back()->with('error', 'An error occurred: ' . $e->getMessage());
+        }
+    }
 
- /**
-     * Display the user's booking history.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\View\View
-     */
+    public function getPaymentDetails($bookingId)
+    {
+        return DB::table('payments')
+            ->where('booking_id', $bookingId)
+            ->first();
+    }
+
+    public function showBooking($bookingId)
+    {
+        $booking = Booking::findOrFail($bookingId);
+        $payment = $this->getPaymentDetails($bookingId);
+        
+        return view('booking.show', compact('booking', 'payment'));
+    }
+
     public function history(Request $request)
     {
         // Get the currently logged in player's ID
@@ -499,21 +581,12 @@ public function showBooking($bookingId)
                           ->orderBy('start_time', 'asc')
                           ->paginate(10);
         
-        
-        
         return view('booking.history', compact('bookings', 'stats'));
     }
 
-    /**
-     * Update statuses for past bookings that are still marked as 'upcoming'
-     *
-     * @param int $playerId
-     * @return void
-     */
     private function updatePastBookingStatuses($playerId)
     {
         try {
-            ;
             // Find all bookings that have passed but still marked as upcoming
             $pastBookings = Booking::where('player_id', $playerId)
                 ->where('status', 'upcoming')
@@ -537,13 +610,6 @@ public function showBooking($bookingId)
         }
     }
 
-    /**
-     * Cancel the specified booking.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Booking  $booking
-     * @return \Illuminate\Http\RedirectResponse
-     */
     public function cancel(Request $request, Booking $booking)
     {
         try {
@@ -624,12 +690,6 @@ public function showBooking($bookingId)
         }
     }
     
-    /**
-     * Get the last visited fields for a player.
-     *
-     * @param  int  $playerId
-     * @return \Illuminate\Database\Eloquent\Collection
-     */
     public static function getLastVisitedFields($playerId)
     {
         // Get the player's booking history, excluding cancelled bookings
@@ -662,6 +722,4 @@ public function showBooking($bookingId)
         
         return $lastVisitedFields;
     }
-
-
 }

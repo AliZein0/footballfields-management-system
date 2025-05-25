@@ -13,7 +13,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Middleware\StoreUserSession;
 use App\Http\Controllers\Admin\DashboardController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\TournamentController;
+use App\Http\Controllers\PlayerTournamentController;
 use App\Http\Controllers\TeamInvitationController;
 use App\Http\Controllers\Admin\AdminSportFieldController;
 use App\Http\Controllers\Admin\AdminReviewController;
@@ -88,18 +88,18 @@ Route::put('/teams/{team}/players/{player}', [PlayerController::class, 'update']
 // Tournament routes
 Route::prefix('tournaments')->name('tournaments.')->group(function() {
     // Browse tournaments (public accessible)
-    Route::get('/browse', [TournamentController::class, 'browse'])->name('browse');
+    Route::get('/browse', [PlayerTournamentController::class, 'browse'])->name('browse');
     
     // Show tournament details (public accessible)
-    Route::get('/{tournament}', [TournamentController::class, 'show'])->name('show');
+    Route::get('/{tournament}', [PlayerTournamentController::class, 'show'])->name('show');
     
     // Protected routes (require authentication)
     Route::middleware('auth')->group(function() {
         // My tournaments
-        Route::post('/{tournament}/cancel', [TournamentController::class, 'cancelRegistration'])->name('cancel');
+        Route::post('/{tournament}/cancel', [PlayerTournamentController::class, 'cancelRegistration'])->name('cancel');
         
         // Join tournament (requires POST method)
-        Route::post('/{tournament}/join', [TournamentController::class, 'join'])->name('join');
+        Route::post('/{tournament}/join', [PlayerTournamentController::class, 'join'])->name('join');
     });
 
     

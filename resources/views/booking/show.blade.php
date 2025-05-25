@@ -567,7 +567,6 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
        
-
 document.addEventListener('DOMContentLoaded', function() {
     // Field data from backend
     const field = @json($field);
@@ -579,6 +578,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let selectedSlot = null;
     let selectedDuration = 1;
     let isLoadingSlots = false;
+    let scheduleInfo = null; // Store schedule details info
 
     // Initialize flatpickr calendar with auto-loading slots
     const calendar = flatpickr('#booking-calendar', {
@@ -623,7 +623,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Enhanced loadSlots function with better error handling and UI feedback
+    // Enhanced loadSlots function with schedule details support
     async function loadSlots(date, duration) {
         const slotsContainer = document.getElementById('slots-container');
         
@@ -641,7 +641,7 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         
         try {
-            // Fetch already booked slots from server
+            // Fetch already booked slots and schedule details from server
             const response = await fetch(`/api/fields/${field.id}/booked-slots?date=${date}`, {
                 headers: {
                     'Accept': 'application/json',
@@ -653,7 +653,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            const bookedSlots = await response.json();
+            const data = await response.json();
+            const bookedSlots = data.slots;
+            scheduleInfo = data.schedule_info; // Store schedule information
             
             // Generate all possible slots
             const slots = generateTimeSlots(defaultFromTime, defaultToTime, duration);
@@ -686,14 +688,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 day: 'numeric' 
             });
             
-            // Add date display
-            slotsContainer.innerHTML = `
-                <div class="date-display mb-3 p-2 bg-light rounded text-center">
-                    <i class="far fa-calendar-alt me-2 text-primary"></i>
-                    <span class="fw-bold">${formattedDate}</span>
-                    <span class="ms-2 badge bg-primary">${duration} Hour${duration > 1 ? 's' : ''}</span>
-                </div>
-            `;
+            // Add date display with schedule info
+           
+            if (scheduleInfo && scheduleInfo.has_custom_schedule && scheduleInfo.unavailable_periods.length > 0) {
+                const unavailablePeriods = scheduleInfo.unavailable_periods.map(period => {
+                    const startTime = formatTime(period.start_time);
+                    const endTime = formatTime(period.end_time);
+                    return `${startTime} - ${endTime}`;
+                }).join(', ');
+                
+              
+            }
+            
+            
             
             // Create slots container
             const slotsGrid = document.createElement('div');
@@ -702,19 +709,48 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Add slots to container
             slots.forEach(slot => {
-                // Check if slot is booked
-                slot.status = isSlotBooked(bookedSlots, slot) ? 'booked' : 'available';
+                // Check if slot is booked (including schedule details)
+                const slotStatus = getSlotStatus(bookedSlots, slot);
+                slot.status = slotStatus.status;
+                slot.reason = slotStatus.reason;
                 
                 const slotElement = document.createElement('div');
                 slotElement.className = `slot-item ${slot.status}`;
+                
+                let statusText = '';
+                let statusIcon = '';
+                
+                switch (slot.status) {
+                    case 'available':
+                        statusText = 'Available';
+                        statusIcon = '<i class="fas fa-check-circle text-success me-1"></i>';
+                        break;
+                    case 'booked':
+                        statusText = 'Booked';
+                        statusIcon = '<i class="fas fa-times-circle text-danger me-1"></i>';
+                        break;
+                    case 'unavailable':
+                        statusText = 'Unavailable';
+                        statusIcon = '<i class="fas fa-ban text-warning me-1"></i>';
+                        break;
+                    case 'past':
+                        statusText = 'Past';
+                        statusIcon = '<i class="fas fa-clock text-secondary me-1"></i>';
+                        break;
+                }
+                
                 slotElement.innerHTML = `
                     <span class="slot-time">${slot.display}</span>
-                    <span class="slot-status">${slot.status === 'available' ? 'Available' : 'Booked'}</span>
+                    <span class="slot-status">${statusIcon}${statusText}</span>
+                    ${slot.reason ? `<small class="slot-reason text-muted">${slot.reason}</small>` : ''}
                 `;
                 
                 if (slot.status === 'available') {
                     slotElement.style.cursor = 'pointer';
                     slotElement.addEventListener('click', () => selectSlot(slot, formattedDate, duration));
+                } else {
+                    slotElement.style.cursor = 'not-allowed';
+                    slotElement.setAttribute('title', slot.reason || `This slot is ${slot.status}`);
                 }
                 
                 slotsGrid.appendChild(slotElement);
@@ -735,6 +771,62 @@ document.addEventListener('DOMContentLoaded', function() {
         } finally {
             isLoadingSlots = false;
         }
+    }
+
+    // Enhanced slot status checking function
+    function getSlotStatus(bookedSlots, slot) {
+        // Check if slot is in the past
+        if (selectedDate === new Date().toISOString().split('T')[0]) {
+            const now = new Date();
+            const slotTime = new Date();
+            const [hours, minutes] = slot.from.split(':');
+            slotTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+            
+            if (slotTime <= now) {
+                return { status: 'past' };
+            }
+        }
+        
+        // Check if slot is booked by another player
+        if (bookedSlots && bookedSlots[slot.from]) {
+            return { status: 'booked' };
+        }
+        
+        // Check for overlaps with booked slots
+        if (bookedSlots) {
+            for (const bookedStart in bookedSlots) {
+                const bookedEnd = bookedSlots[bookedStart];
+                
+                const slotFrom = timeToMinutes(slot.from);
+                const slotTo = timeToMinutes(slot.to);
+                const bookingFrom = timeToMinutes(bookedStart);
+                const bookingTo = timeToMinutes(bookedEnd);
+                
+                if ((slotFrom >= bookingFrom && slotFrom < bookingTo) || 
+                    (slotTo > bookingFrom && slotTo <= bookingTo) ||
+                    (slotFrom <= bookingFrom && slotTo >= bookingTo)) {
+                    
+                    // Check if this is due to schedule details
+                    if (scheduleInfo && scheduleInfo.unavailable_periods.length > 0) {
+                        const isScheduleUnavailable = scheduleInfo.unavailable_periods.some(period => {
+                            const periodStart = timeToMinutes(period.start_time);
+                            const periodEnd = timeToMinutes(period.end_time);
+                            return (slotFrom >= periodStart && slotFrom < periodEnd) ||
+                                   (slotTo > periodStart && slotTo <= periodEnd) ||
+                                   (slotFrom <= periodStart && slotTo >= periodEnd);
+                        });
+                        
+                        if (isScheduleUnavailable) {
+                            return { status: 'unavailable', reason: 'Manager has marked this time as unavailable' };
+                        }
+                    }
+                    
+                    return { status: 'booked', reason: 'Time slot conflicts with existing booking' };
+                }
+            }
+        }
+        
+        return { status: 'available', reason: null };
     }
 
     // Enhanced slot selection function
@@ -816,31 +908,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         return slots;
-    }
-
-    function isSlotBooked(bookedSlots, slot) {
-        if (bookedSlots && bookedSlots.slots) {
-            if (bookedSlots.slots[slot.from]) {
-                return true;
-            }
-            
-            for (const bookedStart in bookedSlots.slots) {
-                const bookedEnd = bookedSlots.slots[bookedStart];
-                
-                const slotFrom = timeToMinutes(slot.from);
-                const slotTo = timeToMinutes(slot.to);
-                const bookingFrom = timeToMinutes(bookedStart);
-                const bookingTo = timeToMinutes(bookedEnd);
-                
-                if ((slotFrom >= bookingFrom && slotFrom < bookingTo) || 
-                    (slotTo > bookingFrom && slotTo <= bookingTo) ||
-                    (slotFrom <= bookingFrom && slotTo >= bookingTo)) {
-                    return true;
-                }
-            }
-        }
-        
-        return false;
     }
 
     function timeToMinutes(timeStr) {
@@ -1043,6 +1110,5 @@ document.addEventListener('DOMContentLoaded', function() {
     // Make loadSlots available globally for retry buttons
     window.loadSlots = loadSlots;
 });
-
     </script>
 </x-layout>
