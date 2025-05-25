@@ -62,7 +62,7 @@ class PlayerController extends Controller
             $pendingInvitations = collect([]);
         }
         
-        return view('players.index', [
+        return view('player.players.index', [
             'fields' => $fields,
             'lastVisitedFields' => $lastVisitedFields,
             'hasBookings' => $hasBookings,
@@ -74,7 +74,7 @@ class PlayerController extends Controller
     // Rest of the controller methods remain unchanged
     public function profile(Player $player)
     {
-        return view('players.profile', [
+        return view('player.players.profile', [
             'player' => $player,
             'sportfield' => SportField::all(),
         ]);
@@ -92,7 +92,7 @@ class PlayerController extends Controller
             'volleyball' => 'Volleyball',
         ];
         
-        return view('players.edit', compact('player', 'availableSports'));
+        return view('player.players.edit', compact('player', 'availableSports'));
     }
     
     /**
@@ -161,7 +161,7 @@ class PlayerController extends Controller
             ->with('user')
             ->paginate(10);
             
-        return view('players.browse', compact('team', 'availablePlayers'));
+        return view('player.players.browse', compact('team', 'availablePlayers'));
     }
 
     /**
@@ -194,7 +194,7 @@ class PlayerController extends Controller
         $player->member_since_formatted = $player->member_since ? 
             $player->member_since->format('F j, Y') : null;
         
-        return view('players.show', compact('team', 'player'));
+        return view('player.players.show', compact('team', 'player'));
     }
 
     /**

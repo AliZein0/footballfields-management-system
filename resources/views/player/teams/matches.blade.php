@@ -155,8 +155,10 @@
                         <!-- Upcoming Matches -->
                         <div class="tab-pane fade show active" id="upcoming" role="tabpanel" aria-labelledby="upcoming-tab">
                             @if($upcomingMatches->count() > 0)
+                             
                                 @foreach($upcomingMatches as $match)
-                                    @include('teams.partials.match-card', ['match' => $match, 'team' => $team])
+                               
+                                   <x-teams.partials.match-card :match="$match[0]" :team="$team" />
                                 @endforeach
                             @else
                                 <div class="text-center py-5">
@@ -174,7 +176,7 @@
                         <div class="tab-pane fade" id="completed" role="tabpanel" aria-labelledby="completed-tab">
                             @if($completedMatches->count() > 0)
                                 @foreach($completedMatches as $match)
-                                    @include('teams.partials.match-card', ['match' => $match, 'team' => $team])
+                                    <x-teams.partials.match-card :match="$match" :team="$team" />
                                 @endforeach
                             @else
                                 <div class="text-center py-5">
@@ -195,7 +197,7 @@
                                             {{ $tournamentName }}
                                         </h5>
                                         @foreach($tournamentMatches as $match)
-                                            @include('teams.partials.match-card', ['match' => $match, 'team' => $team])
+                                            <x-teams.partials.match-card :match="$match" :team="$team" />
                                         @endforeach
                                     </div>
                                 @endforeach

@@ -57,10 +57,10 @@ public function index()
         $searchResults = $this->searchFields(request()->all());
         $resultsCount = $searchResults->count();
         
-        return view('players.index', compact('fields', 'hasBookings', 'lastVisitedFields', 'hasSearch', 'searchResults', 'resultsCount'));
+        return view('player.players.index', compact('fields', 'hasBookings', 'lastVisitedFields', 'hasSearch', 'searchResults', 'resultsCount'));
     }
     
-    return view('players.index', compact('fields', 'hasBookings', 'lastVisitedFields'));
+    return view('player.players.index', compact('fields', 'hasBookings', 'lastVisitedFields'));
 }
 
 public function search(Request $request)
@@ -92,7 +92,7 @@ public function search(Request $request)
         }
     }
     
-    return view('players.index', compact('fields', 'hasBookings', 'lastVisitedFields', 'hasSearch', 'searchResults', 'resultsCount'));
+    return view('player.players.index', compact('fields', 'hasBookings', 'lastVisitedFields', 'hasSearch', 'searchResults', 'resultsCount'));
 }
 
 private function searchFields($params)
@@ -204,7 +204,7 @@ private function searchFields($params)
             ->select('default_schedules.*')
             ->get();
             
-        return view('sport_fields.show', compact('sportField', 'defaultSchedules'));
+        return view('player.sport_fields.show', compact('sportField', 'defaultSchedules'));
     }
 
 
@@ -291,7 +291,7 @@ public function allFields(Request $request)
     $allFields = $query->paginate(12);
     
     // Return the view with data
-    return view('sportfields.all-fields', compact('allFields', 'pageTitle'));
+    return view('player.sportfields.all-fields', compact('allFields', 'pageTitle'));
 }
    
 

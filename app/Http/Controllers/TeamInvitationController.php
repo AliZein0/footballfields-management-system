@@ -75,7 +75,7 @@ class TeamInvitationController extends Controller
         
         $pendingInvitations = $team->pendingInvitations()->with('player.user')->get();
         
-        return view('teams.invitations', compact('team', 'pendingInvitations'));
+        return view('player.teams.invitations', compact('team', 'pendingInvitations'));
     }
     
     /**
@@ -89,7 +89,7 @@ class TeamInvitationController extends Controller
         
         $pendingInvitations = $player->pendingTeamInvitations()->with(['team', 'inviter'])->get();
         
-        return view('players.invitations', compact('player', 'pendingInvitations'));
+        return view('player.players.invitations', compact('player', 'pendingInvitations'));
     }
     
     /**

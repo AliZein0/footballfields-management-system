@@ -36,7 +36,7 @@ class BookingController extends Controller
             }
         }
         
-        return view('booking.show', compact('field', 'player', 'booking', 'payment'));
+        return view('player.booking.show', compact('field', 'player', 'booking', 'payment'));
     }
 
     public function store(Request $request)
@@ -321,7 +321,7 @@ class BookingController extends Controller
         $payment = DB::table('payments')->where('booking_id', $booking->id)->first();
         
         // Return the view with the booking and payment data
-        return view('booking.edit', compact('booking', 'payment'));
+        return view('player.booking.edit', compact('booking', 'payment'));
     }
 
     public function update(Request $request, Booking $booking)
@@ -509,7 +509,7 @@ class BookingController extends Controller
         $booking = Booking::findOrFail($bookingId);
         $payment = $this->getPaymentDetails($bookingId);
         
-        return view('booking.show', compact('booking', 'payment'));
+        return view('player.booking.show', compact('booking', 'payment'));
     }
 
     public function history(Request $request)
@@ -519,7 +519,7 @@ class BookingController extends Controller
         
         // Check if player exists
         if (!$playerId) {
-            return view('booking.history', [
+            return view('player.booking.history', [
                 'bookings' => collect([]),
                 'stats' => [
                     'total' => 0,
@@ -581,7 +581,7 @@ class BookingController extends Controller
                           ->orderBy('start_time', 'asc')
                           ->paginate(10);
         
-        return view('booking.history', compact('bookings', 'stats'));
+        return view('player.booking.history', compact('bookings', 'stats'));
     }
 
     private function updatePastBookingStatuses($playerId)

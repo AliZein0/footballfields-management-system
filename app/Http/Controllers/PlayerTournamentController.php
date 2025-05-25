@@ -49,7 +49,7 @@ class PlayerTournamentController extends Controller
         // Get unique sport types from sportField for the filter dropdown
         $sportTypes = SportField::distinct()->pluck('type');
         
-        return view('tournaments.browse', compact('tournaments', 'sportType', 'status', 'sportTypes'));
+        return view('player.tournaments.browse', compact('tournaments', 'sportType', 'status', 'sportTypes'));
     }
     // Method to handle tournament joining
 // Method to handle tournament joining
@@ -171,7 +171,7 @@ public function show(Tournament $tournament)
         }
     }
     
-    return view('tournaments.show', compact('tournament', 'userEligibleTeams'));
+    return view('player.tournaments.show', compact('tournament', 'userEligibleTeams'));
 }
 
 

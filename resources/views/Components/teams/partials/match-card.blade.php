@@ -1,5 +1,5 @@
 {{-- teams/partials/match-card.blade.php --}}
-<div class="card mb-3 {{ $match->status == 'completed' && $match->winner_id ? 'border-success' : ($match->status == 'cancelled' ? 'border-danger' : ($match->date < now()->toDateString() && $match->status != 'completed' ? 'border-warning' : 'border-primary')) }}">
+<div class="card mb-3 {{ $match->status == 'upcoming'? 'border-success' : ($match->status == 'cancelled' ? 'border-danger' : ($match->date < now()->toDateString() && $match->status != 'completed' ? 'border-warning' : 'border-primary')) }}">
     <div class="card-body">
         <div class="row align-items-center">
             <!-- Match Info -->
@@ -45,7 +45,7 @@
                             <div class="badge bg-danger fs-6 py-2 px-3">
                                 CANCELLED
                             </div>
-                        @elseif($match->status == 'in_progress')
+                        @elseif($match->status == 'upcoming' && $match->date == now()->toDateString())
                             <!-- Match in progress -->
                             <div class="badge bg-info fs-6 py-2 px-3">
                                 LIVE
@@ -108,8 +108,8 @@
                         </div>
                         <div class="small text-muted">
                             <i class="fas fa-clock me-1"></i>
-                            {{ \Carbon\Carbon::parse($match->start_time, 'H:i:s')->format('g:i A') }} - 
-                            {{ \Carbon\Carbon::parse($match->end_time, 'H:i:s')->format('g:i A') }}
+                            {{ \Carbon\Carbon::parse($match->start_time)->format('g:i A') }} - 
+                            {{ \Carbon\Carbon::parse($match->end_time)->format('g:i A') }}
                         </div>
                     </div>
 
@@ -174,19 +174,7 @@
             </div>
         @endif
 
-        <!-- Match Notes (if any) -->
-        @if($match->match_notes)
-            <div class="row mt-3">
-                <div class="col-12">
-                    <div class="alert alert-light border-0 py-2 mb-0">
-                        <small class="text-muted">
-                            <i class="fas fa-sticky-note me-1"></i>
-                            <strong>Notes:</strong> {{ $match->match_notes }}
-                        </small>
-                    </div>
-                </div>
-            </div>
-        @endif
+     
     </div>
 </div>
     <div class="card-body">
@@ -287,8 +275,8 @@
                         </div>
                         <div class="small text-muted">
                             <i class="fas fa-clock me-1"></i>
-                            {{ \Carbon\Carbon::parse($match->start_time, 'H:i:s')->format('g:i A') }} - 
-                            {{ \Carbon\Carbon::parse($match->end_time, 'H:i:s')->format('g:i A') }}
+                            {{ \Carbon\Carbon::parse($match->start_time )->format('g:i A') }} - 
+                            {{ \Carbon\Carbon::parse($match->end_time)->format('g:i A') }}
                         </div>
                     </div>
 

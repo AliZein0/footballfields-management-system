@@ -85,7 +85,7 @@ Route::put('/teams/{team}/players/{player}', [PlayerController::class, 'update']
     Route::get('/fields/{field}/available-slots', [BookingController::class, 'checkAvailability']);
 });
 
-// Tournament routes
+
 Route::prefix('tournaments')->name('tournaments.')->group(function() {
     // Browse tournaments (public accessible)
     Route::get('/browse', [PlayerTournamentController::class, 'browse'])->name('browse');
